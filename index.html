@@ -863,13 +863,26 @@
       statesText.textContent = 'States';
     }
     
+    // Filter active features and deduplicate by state name
     const active = geo.features.filter(f => {
       const s = f.properties._startYear, e = f.properties._endYear;
       return year >= s && (year <= e || e >= 9999);
     });
-    active.sort((a,b) => path.area(b) - path.area(a));
+    
+    // Deduplicate: keep only the most recent feature for each state name
+    const stateMap = new Map();
+    active.forEach(f => {
+      const name = f.properties.FULL_NAME || f.properties.NAME || 'unknown';
+      const existing = stateMap.get(name);
+      if (!existing || f.properties._startYear > existing.properties._startYear) {
+        stateMap.set(name, f);
+      }
+    });
+    const deduped = Array.from(stateMap.values());
+    
+    deduped.sort((a,b) => path.area(b) - path.area(a));
 
-    const units = gBound.selectAll('path.unit').data(active, featureKey);
+    const units = gBound.selectAll('path.unit').data(deduped, featureKey);
     units.exit().remove();
     const newUnits = units.enter().append('path').attr('class', d => 'unit '+classifyUnit(d,year)).attr('d', path);
     units.merge(newUnits).attr('class', d => 'unit '+classifyUnit(d,year)).attr('d', path);
