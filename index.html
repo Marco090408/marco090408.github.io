@@ -585,7 +585,7 @@
     <div class="legend-circle" style="background: var(--event-color);"></div>
     <span>Historical Events</span>
   </div>
-  <div class="legend-item" id="current-year-legend" style="display: none;">
+  <div class="legend-item" id="current-year-legend">
     <div class="legend-circle current-year-legend"></div>
     <span>Current Year Event</span>
   </div>
@@ -851,9 +851,6 @@
     
     const confLegend = document.getElementById('confederate-legend');
     const statesText = document.getElementById('states-legend-text');
-    const currYrLegend = document.getElementById('current-year-legend');
-    
-    currYrLegend.style.display = events.filter(e => e.year === year).length > 0 ? 'flex' : 'none';
     
     if (year >= 1861 && year <= 1865) {
       confLegend.style.display = 'flex';
