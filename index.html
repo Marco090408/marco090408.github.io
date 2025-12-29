@@ -1034,10 +1034,31 @@
       const DATA_URL = 'https://raw.githubusercontent.com/lmullen/historical-us-boundaries/master/us.json';
       const topo = await fetch(DATA_URL).then(r => r.json());
       geo = topojson.feature(topo, topo.objects.states);
+      
+      // List of current 50 states that should display through 2025
+      const currentStates = [
+        'Alabama','Alaska','Arizona','Arkansas','California','Colorado','Connecticut','Delaware',
+        'Florida','Georgia','Hawaii','Idaho','Illinois','Indiana','Iowa','Kansas','Kentucky',
+        'Louisiana','Maine','Maryland','Massachusetts','Michigan','Minnesota','Mississippi',
+        'Missouri','Montana','Nebraska','Nevada','New Hampshire','New Jersey','New Mexico',
+        'New York','North Carolina','North Dakota','Ohio','Oklahoma','Oregon','Pennsylvania',
+        'Rhode Island','South Carolina','South Dakota','Tennessee','Texas','Utah','Vermont',
+        'Virginia','Washington','West Virginia','Wisconsin','Wyoming'
+      ];
+      
       geo.features.forEach(f => {
         const p = f.properties || {};
         p._startYear = p.START_DATE ? +String(p.START_DATE).slice(0,4) : -9999;
         p._endYear = p.END_DATE ? +String(p.END_DATE).slice(0,4) : 9999;
+        
+        // Extend current states to 2025 if their end date is before that
+        const name = p.FULL_NAME || p.NAME || '';
+        const isCurrentState = currentStates.some(state => name.includes(state));
+        const isState = (p.TERR_TYPE || '').toLowerCase().includes('state');
+        
+        if (isCurrentState && isState && p._endYear < 2025) {
+          p._endYear = 2025;
+        }
       });
       events = embeddedEvents;
       dataReady = true;
