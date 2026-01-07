@@ -3,20 +3,22 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>US History Map — Enhanced</title>
+<title>US History Map — Interactive Timeline</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
   
   :root { 
-    --primary-blue: #2563eb;
-    --primary-blue-light: #3b82f6;
-    --panel-bg: rgba(255, 255, 255, 0.98);
-    --panel-border: rgba(255, 255, 255, 0.3);
-    --shadow-light: 0 4px 20px rgba(0, 0, 0, 0.1);
-    --shadow-medium: 0 8px 32px rgba(0, 0, 0, 0.15);
-    --gradient-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    --text-primary: #1f2937;
-    --text-secondary: #6b7280;
+    --primary: #6366f1;
+    --primary-light: #818cf8;
+    --primary-dark: #4f46e5;
+    --secondary: #8b5cf6;
+    --accent: #ec4899;
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-tertiary: #334155;
+    --text-primary: #f1f5f9;
+    --text-secondary: #cbd5e1;
+    --text-muted: #94a3b8;
     --state-color: #10b981;
     --state-hover: #059669;
     --territory-color: #f59e0b;
@@ -25,129 +27,176 @@
     --event-hover: #dc2626;
     --confederate-color: #dc2626;
     --confederate-hover: #b91c1c;
-    --panel-height: 140px;
+    --shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
   }
   
-  * { box-sizing: border-box; }
-  html, body { height: 100%; margin: 0; padding: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
   
   body { 
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-    background: var(--gradient-bg);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+    color: var(--text-primary);
     overflow: hidden;
   }
   
-  #panel { 
-    position: fixed; 
-    left: 20px; 
-    top: 20px; 
-    right: 360px;
-    height: var(--panel-height);
-    background: var(--panel-bg);
+  .header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 80px;
+    background: rgba(15, 23, 42, 0.95);
     backdrop-filter: blur(20px);
-    border: 1px solid var(--panel-border);
-    padding: 24px; 
-    border-radius: 16px; 
-    box-shadow: var(--shadow-medium);
-    z-index: 20; 
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 40px;
+    z-index: 100;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
   }
   
-  #panel:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
   }
   
-  .panel-title {
+  .logo {
+    font-size: 16px;
+    font-weight: 700;
+    color: white;
+    letter-spacing: 1px;
+    line-height: 1;
+    padding: 10px 16px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 10px;
+    text-transform: uppercase;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  }
+  
+  .header-title {
     font-size: 20px;
     font-weight: 700;
     color: var(--text-primary);
-    margin: 0 0 16px 0;
     letter-spacing: -0.5px;
+  }
+  
+  .header-right {
+    display: flex;
+    gap: 12px;
+  }
+  
+  .header-btn {
+    padding: 10px 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--text-primary);
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .header-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-1px);
+  }
+  
+  .main-container {
+    position: fixed;
+    top: 80px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+  }
+  
+  .left-panel {
+    width: 360px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .control-panel {
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 28px;
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+  }
+  
+  .control-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
   
   .year-control {
     display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .year-display {
+    display: flex;
     align-items: center;
-    gap: 14px;
-    margin-bottom: 14px;
+    justify-content: space-between;
   }
   
   .year-label {
     font-size: 14px;
     font-weight: 600;
     color: var(--text-secondary);
-    min-width: 40px;
   }
   
-  #year {
-    flex: 1;
-    height: 8px;
-    border-radius: 4px;
-    background: #e5e7eb;
-    outline: none;
-    appearance: none;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-  
-  #year::-webkit-slider-thumb {
-    appearance: none;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: var(--primary-blue);
-    cursor: pointer;
-    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
-    transition: all 0.2s ease;
-  }
-  
-  #year::-webkit-slider-thumb:hover {
-    transform: scale(1.15);
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.5);
-  }
-  
-  #year::-moz-range-thumb {
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: var(--primary-blue);
-    cursor: pointer;
-    border: none;
-    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+  .year-value-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
   }
   
   #yearValue { 
-    font-weight: 700;
-    font-size: 18px;
-    color: var(--primary-blue);
-    min-width: 70px;
+    font-weight: 800;
+    font-size: 32px;
+    color: var(--primary-light);
+    min-width: 110px;
     text-align: center;
-    background: rgba(255, 255, 255, 0.9);
-    border: 2px solid rgba(37, 99, 235, 0.2);
-    border-radius: 8px;
-    padding: 6px 12px;
+    background: rgba(99, 102, 241, 0.1);
+    border: 2px solid rgba(99, 102, 241, 0.3);
+    border-radius: 12px;
+    padding: 8px 16px;
     cursor: pointer;
     transition: all 0.2s ease;
   }
   
   #yearValue:hover {
-    background: white;
-    border-color: var(--primary-blue);
-    transform: translateY(-1px);
+    background: rgba(99, 102, 241, 0.15);
+    border-color: var(--primary);
+    transform: translateY(-2px);
   }
   
   #yearInput {
     display: none;
-    font-weight: 700;
-    font-size: 18px;
-    color: var(--primary-blue);
-    width: 90px;
+    font-weight: 800;
+    font-size: 32px;
+    color: var(--primary-light);
+    width: 110px;
     text-align: center;
-    background: white;
-    border: 2px solid var(--primary-blue);
-    border-radius: 8px;
-    padding: 6px 12px;
+    background: rgba(15, 23, 42, 0.95);
+    border: 2px solid var(--primary);
+    border-radius: 12px;
+    padding: 8px 16px;
     outline: none;
     font-family: 'Inter', sans-serif;
   }
@@ -161,117 +210,241 @@
     -moz-appearance: textfield;
   }
   
+  #year {
+    width: 100%;
+    height: 10px;
+    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.1);
+    outline: none;
+    appearance: none;
+    cursor: pointer;
+  }
+  
+  #year::-webkit-slider-thumb {
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.5);
+    transition: all 0.2s ease;
+  }
+  
+  #year::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+    box-shadow: 0 6px 16px rgba(99, 102, 241, 0.6);
+  }
+  
+  #year::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.5);
+  }
+  
+  .slider-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 600;
+    margin-top: 8px;
+  }
+  
   #play {
-    padding: 8px 18px;
-    background: var(--primary-blue);
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
     color: white;
     border: none;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 600;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 700;
     cursor: pointer;
     transition: all 0.2s ease;
-    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
   }
   
   #play:hover {
-    background: var(--primary-blue-light);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
-  }
-  
-  #play:active {
-    transform: translateY(0);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(99, 102, 241, 0.5);
   }
   
   #status { 
     font-size: 13px; 
     color: var(--text-secondary); 
-    margin: 0;
+    text-align: center;
+    margin-top: 12px;
     font-weight: 500;
   }
   
-  #svg-container {
-    position: absolute;
-    top: calc(var(--panel-height) + 40px);
-    left: 0;
-    width: 100vw;
-    height: calc(100vh - var(--panel-height) - 40px);
-    z-index: 1;
+  .events-panel {
+    flex: 1;
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 24px;
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    overflow-y: auto;
+  }
+  
+  .events-panel::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  .events-panel::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+  }
+  
+  .events-panel::-webkit-scrollbar-thumb {
+    background: rgba(99, 102, 241, 0.5);
+    border-radius: 4px;
+  }
+  
+  .events-panel::-webkit-scrollbar-thumb:hover {
+    background: rgba(99, 102, 241, 0.7);
+  }
+  
+  .events-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+  }
+  
+  .events-subtitle {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+    font-weight: 500;
+  }
+  
+  .event-item {
+    padding: 12px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .event-item:hover {
+    background: rgba(99, 102, 241, 0.1);
+    border-color: rgba(99, 102, 241, 0.3);
+    transform: translateX(4px);
+  }
+  
+  .event-year {
+    font-weight: 700;
+    color: var(--primary-light);
+    font-size: 12px;
+    letter-spacing: 0.5px;
+  }
+  
+  .event-title {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-top: 4px;
+    line-height: 1.4;
+  }
+  
+  .event-item.current-year {
+    background: rgba(139, 92, 246, 0.15);
+    border-color: rgba(139, 92, 246, 0.4);
+    box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
+  }
+  
+  .event-item.current-year .event-year {
+    color: var(--secondary);
+  }
+  
+  .no-events {
+    color: var(--text-muted);
+    font-style: italic;
+    text-align: center;
+    padding: 40px 0;
+  }
+  
+  .map-container {
+    flex: 1;
+    position: relative;
+    background: rgba(15, 23, 42, 0.5);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
   }
   
   svg { 
     width: 100%; 
     height: 100%; 
     display: block; 
-    background: linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 100%);
+    background: linear-gradient(180deg, #1e3a5f 0%, #0f2744 100%);
   }
   
   .unit { 
-    stroke: rgba(255, 255, 255, 0.9);
-    stroke-width: 0.5px;
+    stroke: rgba(255, 255, 255, 0.6);
+    stroke-width: 1px;
     cursor: pointer;
     transition: all 0.2s ease;
-    shape-rendering: geometricPrecision;
   }
   
   .unit.state { fill: var(--state-color); }
   .unit.state:hover { 
     fill: var(--state-hover);
     stroke: white;
-    stroke-width: 1.5px;
+    stroke-width: 2.5px;
   }
   
   .unit.territory { fill: var(--territory-color); }
   .unit.territory:hover { 
     fill: var(--territory-hover);
     stroke: white;
-    stroke-width: 1.5px;
+    stroke-width: 2.5px;
   }
   
-  .unit.other { fill: #374151; }
+  .unit.other { fill: #475569; }
   .unit.other:hover {
-    fill: #4b5563;
+    fill: #64748b;
     stroke: white;
-    stroke-width: 1.5px;
+    stroke-width: 2.5px;
   }
   
   .unit.confederate { fill: var(--confederate-color); }
   .unit.confederate:hover {
     fill: var(--confederate-hover);
     stroke: white;
-    stroke-width: 1.5px;
+    stroke-width: 2.5px;
   }
   
   .event { 
     stroke: white;
-    stroke-width: 2px;
+    stroke-width: 2.5px;
     cursor: pointer;
     fill: var(--event-color);
-    opacity: 0.85;
+    opacity: 0.9;
     transition: all 0.3s ease;
   } 
   
   .event:hover {
     fill: var(--event-hover);
-    stroke-width: 3px;
-    opacity: 1;
-  }
-  
-  .event.highlighted {
-    fill: #fbbf24;
-    stroke: white;
-    stroke-width: 3px;
-    animation: pulse 1.5s infinite;
+    stroke-width: 4px;
     opacity: 1;
   }
   
   .event.current-year {
-    fill: #667eea;
-    stroke: #764ba2;
+    fill: var(--secondary);
+    stroke: var(--accent);
     stroke-width: 4px;
     opacity: 1;
-    animation: pulse 1.5s infinite alternate;
+    animation: pulse 2s infinite;
   }
   
   @keyframes pulse {
@@ -282,803 +455,531 @@
   .tooltip { 
     position: absolute; 
     pointer-events: none; 
-    background: rgba(17, 24, 39, 0.97);
+    background: rgba(15, 23, 42, 0.98);
     backdrop-filter: blur(20px);
-    color: white;
-    padding: 18px 22px; 
+    color: var(--text-primary);
+    padding: 16px 20px; 
     border-radius: 12px; 
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
     max-width: 340px; 
     font-size: 14px; 
-    z-index: 30;
+    z-index: 200;
     line-height: 1.6;
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.2);
   }
   
   .tooltip-fixed {
-    position: fixed !important;
     pointer-events: auto !important;
     max-width: 420px;
-    z-index: 50;
-    animation: tooltipAppear 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 201;
+    animation: tooltipAppear 0.3s ease;
   }
   
   .tooltip-close {
     position: absolute;
-    top: 10px;
-    right: 10px;
-    background: rgba(255, 255, 255, 0.15);
+    top: 12px;
+    right: 12px;
+    background: rgba(255, 255, 255, 0.1);
     border: none;
-    color: white;
-    width: 26px;
-    height: 26px;
+    color: var(--text-primary);
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 16px;
-    font-weight: 600;
+    font-size: 18px;
+    font-weight: 700;
     transition: all 0.2s ease;
   }
   
   .tooltip-close:hover {
-    background: rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.2);
     transform: scale(1.1);
   }
   
   @keyframes tooltipAppear {
-    from {
-      opacity: 0;
-      transform: translateY(10px) scale(0.95);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0) scale(1);
-    }
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
   }
   
   .tooltip h3 {
     margin: 0 0 10px 0;
     font-size: 17px;
-    font-weight: 600;
-    color: #fbbf24;
-    letter-spacing: -0.3px;
+    font-weight: 700;
+    color: var(--primary-light);
   }
   
   .tooltip-content {
     margin-bottom: 12px;
-    opacity: 0.95;
+    color: var(--text-secondary);
     line-height: 1.6;
   }
   
   .tooltip a { 
-    color: #60a5fa; 
+    color: var(--primary-light); 
     text-decoration: none; 
-    font-weight: 500;
+    font-weight: 600;
     transition: color 0.2s ease;
   }
   
   .tooltip a:hover {
-    color: #93c5fd;
+    color: var(--primary);
     text-decoration: underline;
   }
   
   .legend {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background: var(--panel-bg);
+    position: absolute;
+    bottom: 24px;
+    right: 24px;
+    background: rgba(15, 23, 42, 0.95);
     backdrop-filter: blur(20px);
-    border: 1px solid var(--panel-border);
-    padding: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 20px;
     border-radius: 12px;
-    box-shadow: var(--shadow-medium);
+    box-shadow: var(--shadow);
     font-size: 13px;
-    z-index: 20;
-    transition: all 0.3s ease;
-  }
-  
-  .legend:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
-  }
-  
-  .events-list {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: var(--panel-bg);
-    backdrop-filter: blur(20px);
-    border: 1px solid var(--panel-border);
-    padding: 22px;
-    border-radius: 16px;
-    box-shadow: var(--shadow-medium);
-    font-size: 13px;
-    max-width: 320px;
-    max-height: 60vh;
-    overflow-y: auto;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 20;
-  }
-  
-  .events-list:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
-  }
-  
-  .events-list::-webkit-scrollbar {
-    width: 8px;
-  }
-  
-  .events-list::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.05);
-    border-radius: 4px;
-  }
-  
-  .events-list::-webkit-scrollbar-thumb {
-    background: rgba(37, 99, 235, 0.3);
-    border-radius: 4px;
-  }
-  
-  .events-list::-webkit-scrollbar-thumb:hover {
-    background: rgba(37, 99, 235, 0.5);
-  }
-  
-  .events-list-title {
-    font-size: 17px;
-    font-weight: 700;
-    color: var(--text-primary);
-    margin: 0 0 8px 0;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    letter-spacing: -0.3px;
-  }
-  
-  .events-list-subtitle {
-    font-size: 12px;
-    color: var(--text-secondary);
-    margin-bottom: 16px;
-    font-weight: 500;
-  }
-  
-  .event-item {
-    padding: 10px 0;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-    transition: all 0.2s ease;
-    cursor: pointer;
-  }
-  
-  .event-item:last-child {
-    border-bottom: none;
-  }
-  
-  .event-item:hover {
-    background: rgba(37, 99, 235, 0.08);
-    border-radius: 8px;
-    padding-left: 10px;
-    padding-right: 10px;
-    margin-left: -10px;
-    margin-right: -10px;
-  }
-  
-  .event-year {
-    font-weight: 700;
-    color: var(--primary-blue);
-    font-size: 12px;
-    letter-spacing: 0.5px;
-  }
-  
-  .event-title {
-    font-weight: 500;
-    color: var(--text-primary);
-    margin-top: 4px;
-    line-height: 1.4;
-  }
-  
-  .event-item.current-year {
-    background: rgba(245, 158, 11, 0.12);
-    border-radius: 8px;
-    padding-left: 10px;
-    padding-right: 10px;
-    margin-left: -10px;
-    margin-right: -10px;
-    border-bottom: 1px solid rgba(245, 158, 11, 0.3);
-    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
-  }
-  
-  .event-item.current-year .event-year {
-    color: #764ba2;
-    font-weight: 700;
-  }
-  
-  .event-item.current-year .event-title {
-    color: #b45309;
-    font-weight: 600;
-  }
-  
-  .no-events {
-    color: var(--text-secondary);
-    font-style: italic;
-    text-align: center;
-    padding: 24px 0;
   }
   
   .legend-item {
     display: flex;
     align-items: center;
-    gap: 10px;
-    margin-bottom: 8px;
+    gap: 12px;
+    margin-bottom: 10px;
   }
   
-  .legend-item:last-child {
-    margin-bottom: 0;
-  }
+  .legend-item:last-child { margin-bottom: 0; }
   
   .legend-dot {
-    width: 14px;
-    height: 14px;
-    border-radius: 3px;
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
     flex-shrink: 0;
   }
   
   .legend-circle {
-    width: 12px;
-    height: 12px;
+    width: 14px;
+    height: 14px;
     border-radius: 50%;
-    border: 2px solid white;
+    border: 2.5px solid white;
     flex-shrink: 0;
   }
   
   .legend-circle.current-year-legend {
-    background: #667eea;
-    border: 2px solid #764ba2;
-    box-shadow: 0 0 8px rgba(245, 158, 11, 0.5);
+    background: var(--secondary);
+    border-color: var(--accent);
+    box-shadow: 0 0 12px rgba(139, 92, 246, 0.6);
   }
   
   .legend-item span {
-    font-weight: 500;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  
+  .modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    z-index: 300;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  
+  .modal.active {
+    display: flex;
+  }
+  
+  .modal-content {
+    background: rgba(15, 23, 42, 0.98);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    padding: 40px;
+    max-width: 600px;
+    max-height: 85vh;
+    width: 100%;
+    overflow-y: auto;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    animation: modalAppear 0.3s ease;
+  }
+  
+  .modal-content::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  .modal-content::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+  }
+  
+  .modal-content::-webkit-scrollbar-thumb {
+    background: rgba(99, 102, 241, 0.5);
+    border-radius: 4px;
+  }
+  
+  .modal-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(99, 102, 241, 0.7);
+  }
+  
+  @keyframes modalAppear {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+  
+  .modal-title {
+    font-size: 28px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .modal-close {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: var(--text-primary);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: 700;
+    transition: all 0.2s ease;
+  }
+  
+  .modal-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+  }
+  
+  .modal-body {
+    color: var(--text-secondary);
+    line-height: 1.8;
+    font-size: 15px;
+  }
+  
+  .modal-body h3 {
+    color: var(--text-primary);
+    font-size: 20px;
+    font-weight: 700;
+    margin: 24px 0 12px 0;
+  }
+  
+  .modal-body h3:first-child {
+    margin-top: 0;
+  }
+  
+  .modal-body p {
+    margin-bottom: 16px;
+  }
+  
+  .modal-body a {
+    color: var(--primary-light);
+    text-decoration: none;
+    font-weight: 600;
+  }
+  
+  .modal-body a:hover {
+    text-decoration: underline;
+  }
+  
+  .modal-body ul {
+    list-style: none;
+    padding: 0;
+    margin: 16px 0;
+  }
+  
+  .modal-body li {
+    padding: 8px 0;
+    padding-left: 24px;
+    position: relative;
+  }
+  
+  .modal-body li:before {
+    content: "→";
+    position: absolute;
+    left: 0;
+    color: var(--primary-light);
+    font-weight: 700;
   }
 </style>
 </head>
 <body>
 
-<div id="panel">
-  <h2 class="panel-title">🗺️ US History Timeline</h2>
-  <div class="year-control">
-    <label class="year-label" for="year">Year</label>
-    <input id="year" type="range" min="1783" max="2025" step="1" value="1803">
-    <span id="yearValue">1803</span>
-    <input id="yearInput" type="number" min="1783" max="2025" value="1803">
-    <button id="play" type="button">▶ Play</button>
+<div class="header">
+  <div class="header-left">
+    <div class="logo">US HISTORY</div>
+    <div class="header-title">Interactive Map Timeline</div>
   </div>
-  <div id="status">Loading map data...</div>
-</div>
-
-<div class="events-list">
-  <div class="events-list-title">📅 Recent Events</div>
-  <div class="events-list-subtitle">Past 20 years</div>
-  <div id="events-container">
-    <div class="no-events">Move the timeline to see events</div>
+  <div class="header-right">
+    <button class="header-btn" onclick="toggleAbout()">About</button>
   </div>
 </div>
 
-<div class="legend">
-  <div class="legend-item">
-    <div class="legend-dot" style="background: var(--state-color);"></div>
-    <span id="states-legend-text">States</span>
+<div class="main-container">
+  <div class="left-panel">
+    <div class="control-panel">
+      <h2 class="control-title">⏱️ Timeline Controls</h2>
+      <div class="year-control">
+        <div class="year-display">
+          <span class="year-label">Current Year</span>
+          <div class="year-value-wrapper">
+            <span id="yearValue">1803</span>
+            <input id="yearInput" type="number" min="1783" max="2025" value="1803">
+          </div>
+        </div>
+        
+        <input id="year" type="range" min="1783" max="2025" step="1" value="1803">
+        <div class="slider-labels">
+          <span>1783</span>
+          <span>2025</span>
+        </div>
+        
+        <button id="play" type="button">▶ Play Timeline</button>
+      </div>
+      <div id="status">Loading map data...</div>
+    </div>
+    
+    <div class="events-panel">
+      <div class="events-title">📅 Recent Events</div>
+      <div class="events-subtitle">Past 20 years</div>
+      <div id="events-container">
+        <div class="no-events">Move the timeline to see events</div>
+      </div>
+    </div>
   </div>
-  <div class="legend-item" id="confederate-legend" style="display: none;">
-    <div class="legend-dot" style="background: var(--confederate-color);"></div>
-    <span>Confederate States</span>
-  </div>
-  <div class="legend-item">
-    <div class="legend-dot" style="background: var(--territory-color);"></div>
-    <span>Territories</span>
-  </div>
-  <div class="legend-item">
-    <div class="legend-dot" style="background: #374151;"></div>
-    <span>Other Areas</span>
-  </div>
-  <div class="legend-item">
-    <div class="legend-circle" style="background: var(--event-color);"></div>
-    <span>Historical Events</span>
-  </div>
-  <div class="legend-item" id="current-year-legend">
-    <div class="legend-circle current-year-legend"></div>
-    <span>Current Year Event</span>
+  
+  <div class="map-container">
+    <svg id="svg" aria-label="US history map"></svg>
+    
+    <div class="legend">
+      <div class="legend-item">
+        <div class="legend-dot" style="background: var(--state-color);"></div>
+        <span id="states-legend-text">States</span>
+      </div>
+      <div class="legend-item" id="confederate-legend" style="display: none;">
+        <div class="legend-dot" style="background: var(--confederate-color);"></div>
+        <span>Confederate States</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background: var(--territory-color);"></div>
+        <span>Territories</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background: #475569;"></div>
+        <span>Other Areas</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-circle" style="background: var(--event-color);"></div>
+        <span>Historical Events</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-circle current-year-legend"></div>
+        <span>Current Year Event</span>
+      </div>
+    </div>
   </div>
 </div>
 
 <div id="tooltip" class="tooltip" style="display:none;"></div>
 
-<div id="svg-container">
-  <svg id="svg" aria-label="Enhanced US history map"></svg>
+<div id="aboutModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 class="modal-title">About This Project</h2>
+      <button class="modal-close" onclick="toggleAbout()">×</button>
+    </div>
+    <div class="modal-body">
+      <h3>Created by Marco Schwarz</h3>
+      <p>This interactive US History Map was created as part of a LAB-Auftrag (independent learning assignment) for my English class. The project visualizes the territorial evolution of the United States from 1783 to 2025, highlighting key historical events along the way.</p>
+      
+      <h3>Data Sources & Attribution</h3>
+      <ul>
+        <li><strong>Historical Boundaries:</strong> The map data is sourced from <a href="https://github.com/lmullen/historical-us-boundaries" target="_blank">Lincoln Mullen's Historical US Boundaries</a> repository, which provides detailed geographical data on US territorial changes over time.</li>
+        <li><strong>Event Information:</strong> Historical event descriptions are sourced from Wikipedia under the Creative Commons license.</li>
+        <li><strong>Visualization:</strong> Built using D3.js for map rendering and TopoJSON for efficient geographical data handling.</li>
+      </ul>
+      
+      <h3>Technologies Used</h3>
+      <ul>
+        <li>D3.js v6 for data visualization</li>
+        <li>TopoJSON for geographical data</li>
+        <li>Wikipedia API for historical context</li>
+        <li>Modern HTML5, CSS3, and JavaScript</li>
+      </ul>
+      
+      <p style="margin-top: 24px; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 13px; color: var(--text-muted);">
+        © 2025 Marco Schwarz • Created for Educational Purposes
+      </p>
+    </div>
+  </div>
 </div>
 
 <script src="https://d3js.org/d3.v6.min.js"></script>
 <script src="https://unpkg.com/topojson-client@3/dist/topojson-client.min.js"></script>
 
 <script>
-(function() {
-  const yearInput = document.getElementById('year');
-  const yearValue = document.getElementById('yearValue');
-  const yearInputBox = document.getElementById('yearInput');
-  const statusEl = document.getElementById('status');
-  const playBtn = document.getElementById('play');
-  const eventsContainer = document.getElementById('events-container');
+function toggleAbout(){document.getElementById('aboutModal').classList.toggle('active');}
+document.getElementById('aboutModal').addEventListener('click',e=>{if(e.target.id==='aboutModal')toggleAbout();});
 
-  let dataReady = false, geo = null, events = [], playing = false;
-  let currentYear = +yearInput.value, fixedTooltip = null, lastRenderedYear = -1;
+(function(){
+const yearInput=document.getElementById('year'),yearValue=document.getElementById('yearValue'),yearInputBox=document.getElementById('yearInput'),statusEl=document.getElementById('status'),playBtn=document.getElementById('play'),eventsContainer=document.getElementById('events-container');
+let dataReady=false,geo=null,events=[],playing=false,currentYear=+yearInput.value,fixedTooltip=null,lastRenderedYear=-1;
 
-  const fallbackDescriptions = {
-    'Alabama': 'Alabama is a state in the southeastern United States, admitted to the Union as the 22nd state in 1819.',
-    'Alaska': 'Alaska is the largest state by area, purchased from Russia in 1867 and admitted as the 49th state in 1959.',
-    'Arizona': 'Arizona is a southwestern state known for its desert landscape, admitted as the 48th state in 1912.',
-    'California': 'California is the most populous state, admitted to the Union in 1850 following the Mexican-American War.',
-    'Texas': 'Texas is the second-largest state, admitted to the Union in 1845 after being an independent republic.',
-    'Florida': 'Florida is a southeastern state, admitted to the Union as the 27th state in 1845.',
-    'Louisiana': 'Louisiana is a Deep South state, admitted to the Union in 1812 after the Louisiana Purchase.',
-    'Louisiana Territory': 'The Louisiana Territory was acquired from France in 1803, doubling the size of the United States.',
-    'Oregon Territory': 'The Oregon Territory was established in 1848, including present-day Oregon, Washington, Idaho, and parts of Montana and Wyoming.',
-    'Northwest Territory': 'The Northwest Territory was established in 1787 as the first organized territory of the United States.',
-    'Indian Territory': 'Indian Territory was land set aside for Native American tribes, primarily in present-day Oklahoma.'
-  };
+const fallbackDescriptions={
+  'Alabama':'Alabama was admitted to the Union as the 22nd state in 1819. It played a central role in the Civil War and Civil Rights Movement.',
+  'Alaska':'Alaska, the largest US state by area, was purchased from Russia in 1867 for $7.2 million and became the 49th state in 1959.',
+  'Arizona':'Arizona joined the Union in 1912 as the 48th state. Known for its desert landscape and the Grand Canyon, it was originally part of the Mexican Cession.',
+  'Arkansas':'Arkansas became the 25th state in 1836. It was a Confederate state during the Civil War and is known for its diverse geography from mountains to lowlands.',
+  'California':'California was admitted in 1850 following the Mexican-American War and Gold Rush. It quickly became the most populous state and an economic powerhouse.',
+  'Colorado':'Colorado became the 38th state in 1876, earning the nickname Centennial State. It is known for the Rocky Mountains and mining heritage.',
+  'Connecticut':'Connecticut was one of the original Thirteen Colonies and ratified the Constitution in 1788. It played a key role in early American manufacturing.',
+  'Delaware':'Delaware was the first state to ratify the Constitution in 1787. This small Mid-Atlantic state is known as the First State and as a corporate haven.',
+  'Florida':'Florida was acquired from Spain in 1819 and became a state in 1845. It was a crucial Confederate state during the Civil War.',
+  'Georgia':'Georgia was one of the original Thirteen Colonies, founded in 1732. It played a major role in the Civil War and Civil Rights Movement.',
+  'Hawaii':'Hawaii became the 50th state in 1959. It was an independent kingdom until 1898 when it was annexed by the United States.',
+  'Idaho':'Idaho became the 43rd state in 1890. The state is known for its mountains, forests, and potato production.',
+  'Illinois':'Illinois became the 21st state in 1818. Chicago grew to become one of America\'s largest cities and a major transportation hub.',
+  'Indiana':'Indiana became the 19th state in 1816. It is known as the Crossroads of America due to its central location and transportation networks.',
+  'Iowa':'Iowa became the 29th state in 1846. It is known for its productive farmland and role as an agricultural powerhouse.',
+  'Kansas':'Kansas became the 34th state in 1861, just before the Civil War. Bleeding Kansas was a preview of the sectional violence to come.',
+  'Kentucky':'Kentucky became the 15th state in 1792. It remained in the Union during the Civil War despite being a border state with divided loyalties.',
+  'Louisiana':'Louisiana was acquired from France in the Louisiana Purchase of 1803 and became a state in 1812. New Orleans has been a major port city since colonial times.',
+  'Maine':'Maine separated from Massachusetts to become the 23rd state in 1820 as part of the Missouri Compromise. It is known for its rugged coastline.',
+  'Maryland':'Maryland was one of the original Thirteen Colonies and ratified the Constitution in 1788. It remained in the Union during the Civil War despite being a border state.',
+  'Massachusetts':'Massachusetts was one of the original Thirteen Colonies and a center of the American Revolution. It ratified the Constitution in 1788.',
+  'Michigan':'Michigan became the 26th state in 1837. Detroit grew to become a major industrial center, particularly for automobile manufacturing.',
+  'Minnesota':'Minnesota became the 32nd state in 1858. It is known as the Land of 10,000 Lakes and for its Scandinavian heritage.',
+  'Mississippi':'Mississippi became the 20th state in 1817. It was a major cotton producer and Confederate state during the Civil War.',
+  'Missouri':'Missouri became the 24th state in 1821 under the Missouri Compromise. It was a border state that remained in the Union during the Civil War.',
+  'Montana':'Montana became the 41st state in 1889. It is known for its mountains, mining history, and vast open spaces.',
+  'Nebraska':'Nebraska became the 37th state in 1867. The transcontinental railroad and Homestead Act drove its settlement and agricultural development.',
+  'Nevada':'Nevada became the 36th state in 1864, during the Civil War. The discovery of the Comstock Lode silver deposit drove its early growth.',
+  'New Hampshire':'New Hampshire was one of the original Thirteen Colonies and the first to declare independence from Britain. It ratified the Constitution in 1788.',
+  'New Jersey':'New Jersey was one of the original Thirteen Colonies and ratified the Constitution in 1787. It played a crucial role in the Revolutionary War.',
+  'New Mexico':'New Mexico became the 47th state in 1912. It has a rich history of Spanish colonization and Native American cultures.',
+  'New York':'New York was one of the original Thirteen Colonies and ratified the Constitution in 1788. New York City became the nation\'s largest city and financial capital.',
+  'North Carolina':'North Carolina was one of the original Thirteen Colonies and ratified the Constitution in 1789. It was the site of the first English settlement attempts.',
+  'North Dakota':'North Dakota became the 39th state in 1889 when Dakota Territory was divided. It is known for agriculture and oil production.',
+  'Ohio':'Ohio became the 17th state in 1803. It was the first state created from the Northwest Territory and became a major industrial center.',
+  'Oklahoma':'Oklahoma became the 46th state in 1907 when Oklahoma Territory and Indian Territory merged. It experienced dramatic land rushes in the 1890s.',
+  'Oregon':'Oregon became the 33rd state in 1859. The Oregon Trail brought thousands of settlers in the 1840s seeking fertile farmland.',
+  'Pennsylvania':'Pennsylvania was one of the original Thirteen Colonies and ratified the Constitution in 1787. Philadelphia was the nation\'s capital during the founding era.',
+  'Rhode Island':'Rhode Island was one of the original Thirteen Colonies and the last to ratify the Constitution in 1790. It is the smallest state by area.',
+  'South Carolina':'South Carolina was one of the original Thirteen Colonies and ratified the Constitution in 1788. It was the first state to secede in 1860.',
+  'South Dakota':'South Dakota became the 40th state in 1889 when Dakota Territory was divided. It is home to Mount Rushmore and the Badlands.',
+  'Tennessee':'Tennessee became the 16th state in 1796. It was a crucial border state during the Civil War with divided loyalties.',
+  'Texas':'Texas was an independent republic from 1836 to 1845 before joining the United States. It remains the only state to have been an independent nation.',
+  'Utah':'Utah became the 45th state in 1896 after decades as a territory. It was settled by Mormon pioneers and polygamy delayed its statehood.',
+  'Vermont':'Vermont was an independent republic before becoming the 14th state in 1791. It was the first state admitted after the original thirteen.',
+  'Virginia':'Virginia was one of the original Thirteen Colonies and ratified the Constitution in 1788. It was home to many Founding Fathers and early presidents.',
+  'Washington':'Washington became the 42nd state in 1889. Seattle and the Puget Sound region developed into a major economic and technological center.',
+  'West Virginia':'West Virginia separated from Virginia during the Civil War to remain in the Union, becoming the 35th state in 1863.',
+  'Wisconsin':'Wisconsin became the 30th state in 1848. It is known for dairy farming, brewing, and Great Lakes shipping.',
+  'Wyoming':'Wyoming became the 44th state in 1890. It was the first government in the world to grant women full voting rights in 1869.',
+  'Texas Republic':'The Republic of Texas (1836-1845) was an independent nation after winning independence from Mexico. It maintained its own government, military, and diplomatic relations before joining the US.',
+  'Louisiana Territory':'The Louisiana Territory, acquired from France in 1803, doubled the size of the United States. It stretched from the Mississippi River to the Rocky Mountains.',
+  'Oregon Territory':'The Oregon Territory (1848-1859) included present-day Oregon, Washington, Idaho, and parts of Montana and Wyoming. American settlement was encouraged by the Oregon Trail.',
+  'Northwest Territory':'The Northwest Territory, established in 1787, was the first organized territory of the United States. It was governed by the Northwest Ordinance and eventually became several Midwestern states.',
+  'Indian Territory':'Indian Territory was established for relocated Native American tribes, primarily in present-day Oklahoma. It existed from 1834 until Oklahoma statehood in 1907.',
+  'Dakota Territory':'The Dakota Territory (1861-1889) covered present-day North Dakota, South Dakota, and parts of Montana and Wyoming. It was divided into two states in 1889.',
+  'Kansas Territory':'Kansas Territory (1854-1861) was the site of violent conflicts over slavery known as Bleeding Kansas, which foreshadowed the Civil War.',
+  'Nebraska Territory':'Nebraska Territory (1854-1867) was created by the Kansas-Nebraska Act. The transcontinental railroad passed through the territory, spurring settlement.',
+  'Minnesota Territory':'Minnesota Territory (1849-1858) was home to the Dakota people and became a state just before the Civil War. The territory experienced rapid growth due to lumber and agriculture.',
+  'Utah Territory':'Utah Territory (1850-1896) was settled primarily by Mormon pioneers. Conflicts over polygamy delayed statehood until 1896.',
+  'New Mexico Territory':'New Mexico Territory (1850-1912) was acquired from Mexico and became the 47th state. It has a rich Spanish and Native American heritage.',
+  'Washington Territory':'Washington Territory (1853-1889) separated from Oregon Territory and became a state in 1889. The Puget Sound region developed into a major economic center.',
+  'Colorado Territory':'Colorado Territory (1861-1876) experienced a gold rush in 1859. It became a state during the nation\'s centennial year, earning the nickname Centennial State.',
+  'Arizona Territory':'Arizona Territory (1863-1912) was separated from New Mexico Territory during the Civil War. Mining and ranching drove its economy.',
+  'Idaho Territory':'Idaho Territory (1863-1890) was created during the Civil War era. Gold discoveries and the transcontinental railroad spurred settlement.',
+  'Montana Territory':'Montana Territory (1864-1889) was known for gold mining and later copper mining. It became a state in 1889.',
+  'Wyoming Territory':'Wyoming Territory (1868-1890) was the first government in the world to grant women the right to vote in 1869, decades before the 19th Amendment.',
+  'Oklahoma Territory':'Oklahoma Territory (1890-1907) was opened to white settlement through land runs. It merged with Indian Territory to form the state of Oklahoma.',
+  'Alaska Territory':'Alaska Territory (1912-1959) was organized decades after the Alaska Purchase. It became strategically important during World War II and the Cold War.',
+  'Hawaii Territory':'Hawaii Territory (1900-1959) was annexed by the United States in 1898. Pearl Harbor became a major naval base, and Hawaii achieved statehood in 1959.',
+  'Michigan Territory':'Michigan Territory (1805-1837) included present-day Michigan, Wisconsin, and parts of Minnesota. Disputes with Ohio over Toledo delayed statehood.',
+  'Wisconsin Territory':'Wisconsin Territory (1836-1848) was created from Michigan Territory. Lead mining and agriculture attracted settlers to the region.',
+  'Iowa Territory':'Iowa Territory (1838-1846) was known for its rich farmland. It became a free state as part of the Missouri Compromise arrangements.',
+  'Arkansas Territory':'Arkansas Territory (1819-1836) was carved from Missouri Territory. It entered as a slave state to balance Michigan as a free state.',
+  'Florida Territory':'Florida Territory (1822-1845) was acquired from Spain through the Adams-Onis Treaty. The Seminole Wars marked this period.',
+  'Mississippi Territory':'Mississippi Territory (1798-1817) was organized from lands ceded by Georgia and South Carolina. It later split into Mississippi and Alabama.',
+  'Missouri Territory':'Missouri Territory (1812-1821) was created from Louisiana Territory. The Missouri Compromise of 1820 addressed slavery issues upon statehood.',
+  'Illinois Territory':'Illinois Territory (1809-1818) was separated from Indiana Territory. It grew rapidly as settlers moved west after the War of 1812.',
+  'Indiana Territory':'Indiana Territory (1800-1816) included present-day Indiana, Illinois, Wisconsin, and parts of Michigan and Minnesota. William Henry Harrison served as governor.'
+};
 
-  function setYearLabel(y) {
-    yearValue.textContent = y;
-    yearInputBox.value = y;
-  }
-  
-  yearValue.addEventListener('click', () => {
-    yearValue.style.display = 'none';
-    yearInputBox.style.display = 'block';
-    yearInputBox.focus();
-    yearInputBox.select();
-  });
-  
-  yearInputBox.addEventListener('blur', () => {
-    yearInputBox.style.display = 'none';
-    yearValue.style.display = 'block';
-    updateYear(+yearInputBox.value);
-  });
-  
-  yearInputBox.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') yearInputBox.blur();
-  });
-  
-  function updateYear(newYear) {
-    newYear = Math.max(1783, Math.min(2025, newYear));
-    currentYear = newYear;
-    yearInput.value = newYear;
-    setYearLabel(newYear);
-    scheduleRender();
-  }
+function setYearLabel(y){yearValue.textContent=y;yearInputBox.value=y;}
+yearValue.addEventListener('click',()=>{yearValue.style.display='none';yearInputBox.style.display='block';yearInputBox.focus();yearInputBox.select();});
+yearInputBox.addEventListener('blur',()=>{yearInputBox.style.display='none';yearValue.style.display='block';updateYear(+yearInputBox.value);});
+yearInputBox.addEventListener('keydown',e=>{if(e.key==='Enter')yearInputBox.blur();});
+function updateYear(newYear){newYear=Math.max(1783,Math.min(2025,newYear));currentYear=newYear;yearInput.value=newYear;setYearLabel(newYear);scheduleRender();}
+setYearLabel(currentYear);
 
-  setYearLabel(currentYear);
+const stateWikiMapping={'Alabama':{wiki:'Alabama'},'Alaska':{wiki:'Alaska'},'Arizona':{wiki:'Arizona'},'Arkansas':{wiki:'Arkansas'},'California':{wiki:'California'},'Colorado':{wiki:'Colorado'},'Connecticut':{wiki:'Connecticut'},'Delaware':{wiki:'Delaware'},'Florida':{wiki:'Florida'},'Georgia':{wiki:'Georgia_(U.S._state)'},'Hawaii':{wiki:'Hawaii'},'Idaho':{wiki:'Idaho'},'Illinois':{wiki:'Illinois'},'Indiana':{wiki:'Indiana'},'Iowa':{wiki:'Iowa'},'Kansas':{wiki:'Kansas'},'Kentucky':{wiki:'Kentucky'},'Louisiana':{wiki:'Louisiana'},'Maine':{wiki:'Maine'},'Maryland':{wiki:'Maryland'},'Massachusetts':{wiki:'Massachusetts'},'Michigan':{wiki:'Michigan'},'Minnesota':{wiki:'Minnesota'},'Mississippi':{wiki:'Mississippi'},'Missouri':{wiki:'Missouri'},'Montana':{wiki:'Montana'},'Nebraska':{wiki:'Nebraska'},'Nevada':{wiki:'Nevada'},'New Hampshire':{wiki:'New_Hampshire'},'New Jersey':{wiki:'New_Jersey'},'New Mexico':{wiki:'New_Mexico'},'New York':{wiki:'New_York_(state)'},'North Carolina':{wiki:'North_Carolina'},'North Dakota':{wiki:'North_Dakota'},'Ohio':{wiki:'Ohio'},'Oklahoma':{wiki:'Oklahoma'},'Oregon':{wiki:'Oregon'},'Pennsylvania':{wiki:'Pennsylvania'},'Rhode Island':{wiki:'Rhode_Island'},'South Carolina':{wiki:'South_Carolina'},'South Dakota':{wiki:'South_Dakota'},'Tennessee':{wiki:'Tennessee'},'Texas':{wiki:'Texas'},'Utah':{wiki:'Utah'},'Vermont':{wiki:'Vermont'},'Virginia':{wiki:'Virginia'},'Washington':{wiki:'Washington_(state)'},'West Virginia':{wiki:'West_Virginia'},'Wisconsin':{wiki:'Wisconsin'},'Wyoming':{wiki:'Wyoming'},'Texas Republic':{wiki:'Republic_of_Texas'},'Louisiana Territory':{wiki:'Louisiana_Territory'},'Oregon Territory':{wiki:'Oregon_Territory'},'Northwest Territory':{wiki:'Northwest_Territory'},'Indian Territory':{wiki:'Indian_Territory'},'Dakota Territory':{wiki:'Dakota_Territory'},'Kansas Territory':{wiki:'Kansas_Territory'},'Nebraska Territory':{wiki:'Nebraska_Territory'},'Minnesota Territory':{wiki:'Minnesota_Territory'},'Utah Territory':{wiki:'Utah_Territory'},'New Mexico Territory':{wiki:'New_Mexico_Territory'},'Washington Territory':{wiki:'Washington_Territory'},'Colorado Territory':{wiki:'Colorado_Territory'},'Arizona Territory':{wiki:'Arizona_Territory'},'Idaho Territory':{wiki:'Idaho_Territory'},'Montana Territory':{wiki:'Montana_Territory'},'Wyoming Territory':{wiki:'Wyoming_Territory'},'Oklahoma Territory':{wiki:'Oklahoma_Territory'},'Alaska Territory':{wiki:'Territory_of_Alaska'},'Hawaii Territory':{wiki:'Territory_of_Hawaii'},'Michigan Territory':{wiki:'Michigan_Territory'},'Wisconsin Territory':{wiki:'Wisconsin_Territory'},'Iowa Territory':{wiki:'Iowa_Territory'},'Arkansas Territory':{wiki:'Arkansas_Territory'},'Florida Territory':{wiki:'Florida_Territory'},'Mississippi Territory':{wiki:'Mississippi_Territory'},'Missouri Territory':{wiki:'Missouri_Territory'},'Illinois Territory':{wiki:'Illinois_Territory'},'Indiana Territory':{wiki:'Indiana_Territory'}};
 
-  const stateWikiMapping = {
-    'Alabama': {wiki: 'Alabama'}, 'Alaska': {wiki: 'Alaska'}, 'Arizona': {wiki: 'Arizona'},
-    'California': {wiki: 'California'}, 'Texas': {wiki: 'Texas'}, 'Florida': {wiki: 'Florida'},
-    'Louisiana': {wiki: 'Louisiana'}, 'Louisiana Territory': {wiki: 'Louisiana_Territory'},
-    'Oregon Territory': {wiki: 'Oregon_Territory'}, 'Northwest Territory': {wiki: 'Northwest_Territory'},
-    'Indian Territory': {wiki: 'Indian_Territory'}, 'Dakota Territory': {wiki: 'Dakota_Territory'}
-  };
-  
-  function summarizeText(text, maxSentences = 3) {
-    if (!text || text.trim() === '') return null;
-    text = text.replace(/\s+/g, ' ').trim();
-    const sentences = text.match(/[^.!?]+[.!?]+/g) || [];
-    if (sentences.length === 0) return null;
-    let summary = sentences.slice(0, maxSentences).join(' ');
-    if (sentences.length > maxSentences) summary += '..';
-    if (summary.length > 350) summary = summary.substring(0, 350) + '...';
-    return summary;
-  }
+function summarizeText(text,maxSentences=3){if(!text||text.trim()==='')return null;text=text.replace(/\s+/g,' ').trim();const sentences=text.match(/[^.!?]+[.!?]+/g)||[];if(sentences.length===0)return null;let summary=sentences.slice(0,maxSentences).join(' ');if(sentences.length>maxSentences)summary+='..';if(summary.length>350)summary=summary.substring(0,350)+'...';return summary;}
 
-  const wikiCache = {}, stateWikiCache = {};
+const wikiCache={},stateWikiCache={};
 
-  async function getWikiExtract(title) {
-    if (wikiCache[title]) return wikiCache[title];
-    const url = `https://en.wikipedia.org/w/api.php?action=query&origin=*&prop=extracts&exintro&explaintext&format=json&titles=${encodeURIComponent(title)}`;
-    try {
-      const response = await fetch(url);
-      const data = await response.json();
-      const pages = data.query.pages;
-      const page = pages[Object.keys(pages)[0]];
-      if (!page || !page.extract || page.extract.trim() === '') {
-        wikiCache[title] = "Description not available. Click the Wikipedia link to learn more.";
-        return wikiCache[title];
-      }
-      const summarized = summarizeText(page.extract, 3);
-      wikiCache[title] = summarized || "Description not available. Click the Wikipedia link to learn more.";
-      return wikiCache[title];
-    } catch (e) {
-      wikiCache[title] = "Unable to load description. Please check your internet connection.";
-      return wikiCache[title];
-    }
-  }
+async function getWikiExtract(title){if(wikiCache[title])return wikiCache[title];const url=`https://en.wikipedia.org/w/api.php?action=query&origin=*&prop=extracts&exintro&explaintext&format=json&titles=${encodeURIComponent(title)}`;try{const response=await fetch(url);const data=await response.json();const pages=data.query.pages;const page=pages[Object.keys(pages)[0]];if(!page||!page.extract||page.extract.trim()===''){wikiCache[title]="Description not available. Click the Wikipedia link to learn more.";return wikiCache[title];}const summarized=summarizeText(page.extract,3);wikiCache[title]=summarized||"Description not available. Click the Wikipedia link to learn more.";return wikiCache[title];}catch(e){wikiCache[title]="Unable to load description. Please check your internet connection.";return wikiCache[title];}}
 
-  async function getStateWikiExtract(stateName) {
-    if (stateWikiCache[stateName]) return stateWikiCache[stateName];
-    if (fallbackDescriptions[stateName]) {
-      stateWikiCache[stateName] = fallbackDescriptions[stateName];
-      return stateWikiCache[stateName];
-    }
-    const stateInfo = stateWikiMapping[stateName];
-    const searchTitle = stateInfo ? stateInfo.wiki : stateName.replace(/\s+/g, '_');
-    const url = `https://en.wikipedia.org/w/api.php?action=query&origin=*&prop=extracts&exintro&explaintext&format=json&titles=${encodeURIComponent(searchTitle)}`;
-    try {
-      const response = await fetch(url);
-      const data = await response.json();
-      const pages = data.query.pages;
-      const page = pages[Object.keys(pages)[0]];
-      if (!page || !page.extract || page.extract.trim() === '') {
-        stateWikiCache[stateName] = `${stateName} was a historical territory or state. Click the Wikipedia link to learn more.`;
-        return stateWikiCache[stateName];
-      }
-      const summarized = summarizeText(page.extract, 4);
-      stateWikiCache[stateName] = summarized || `${stateName} was a historical territory or state. Click the Wikipedia link to learn more.`;
-      return stateWikiCache[stateName];
-    } catch (e) {
-      stateWikiCache[stateName] = `Unable to load description for ${stateName}. Please check your internet connection.`;
-      return stateWikiCache[stateName];
-    }
-  }
+async function getStateWikiExtract(stateName){if(stateWikiCache[stateName])return stateWikiCache[stateName];if(fallbackDescriptions[stateName]){stateWikiCache[stateName]=fallbackDescriptions[stateName];return stateWikiCache[stateName];}const stateInfo=stateWikiMapping[stateName];const searchTitle=stateInfo?stateInfo.wiki:stateName.replace(/\s+/g,'_');const url=`https://en.wikipedia.org/w/api.php?action=query&origin=*&prop=extracts&exintro&explaintext&format=json&titles=${encodeURIComponent(searchTitle)}`;try{const response=await fetch(url);const data=await response.json();const pages=data.query.pages;const page=pages[Object.keys(pages)[0]];if(!page||!page.extract||page.extract.trim()===''){stateWikiCache[stateName]=`${stateName} was a historical territory or state. Click the Wikipedia link to learn more.`;return stateWikiCache[stateName];}const summarized=summarizeText(page.extract,4);stateWikiCache[stateName]=summarized||`${stateName} was a historical territory or state. Click the Wikipedia link to learn more.`;return stateWikiCache[stateName];}catch(e){stateWikiCache[stateName]=`Unable to load description for ${stateName}. Please check your internet connection.`;return stateWikiCache[stateName];}}
 
-  const svg = d3.select('#svg');
-  let width = window.innerWidth, height = window.innerHeight - 180;
-  svg.attr('viewBox', `0 0 ${width} ${height}`);
-  
-  const projection = d3.geoAlbersUsa().translate([width/2, height/2]).scale(Math.min(width, height) * 1.6);
-  const path = d3.geoPath().projection(projection);
-  const tooltip = d3.select('#tooltip');
-  const gBound = svg.append('g').attr('id','bounds');
-  const gEvents = svg.append('g').attr('id','events');
+const svg=d3.select('#svg');const container=document.querySelector('.map-container');let width=container.clientWidth,height=container.clientHeight;svg.attr('viewBox',`0 0 ${width} ${height}`);
+const projection=d3.geoAlbersUsa().translate([width/2,height/2]).scale(Math.min(width,height)*1.3);const path=d3.geoPath().projection(projection);const tooltip=d3.select('#tooltip');const gBound=svg.append('g').attr('id','bounds');const gEvents=svg.append('g').attr('id','events');
 
-  function classifyUnit(d, yr){
-    const t = (d.properties.TERR_TYPE || '').toLowerCase();
-    const name = d.properties.FULL_NAME || d.properties.NAME || '';
-    if (yr >= 1861 && yr <= 1865) {
-      const confederate = ['South Carolina','Mississippi','Florida','Alabama','Georgia','Louisiana','Texas','Virginia','Arkansas','North Carolina','Tennessee'];
-      if (name.includes('West Virginia')) return 'state';
-      if (confederate.some(c => name.includes(c))) return 'confederate';
-    }
-    if (t.includes('state')) return 'state';
-    if (t.includes('territory')) return 'territory';
-    return 'other';
-  }
+function classifyUnit(d,yr){const t=(d.properties.TERR_TYPE||'').toLowerCase();const name=d.properties.FULL_NAME||d.properties.NAME||'';if(yr>=1861&&yr<=1865){const confederate=['South Carolina','Mississippi','Florida','Alabama','Georgia','Louisiana','Texas','Virginia','Arkansas','North Carolina','Tennessee'];if(name.includes('West Virginia'))return'state';if(confederate.some(c=>name.includes(c)))return'confederate';}if(t.includes('state')||name.includes('State'))return'state';if(t.includes('territory')||name.includes('Territory'))return'territory';if(t.includes('other')||!t)return'other';return'other';}
 
-  function getTypeText(d, yr) {
-    const type = classifyUnit(d, yr);
-    if (yr >= 1861 && yr <= 1865) {
-      if (type === 'state') return 'Union State';
-      if (type === 'confederate') return 'Confederate State';
-      if (type === 'territory') return 'Territory';
-      return 'Area';
-    }
-    if (type === 'state' || type === 'confederate') return 'State';
-    if (type === 'territory') return 'Territory';
-    return 'Area';
-  }
-  
-  function featureKey(d){
-    const p = d.properties || {};
-    const bounds = path.bounds(d);
-    const bStr = bounds ? `${bounds[0][0]},${bounds[0][1]},${bounds[1][0]},${bounds[1][1]}` : 'nobounds';
-    return (p.FIPS||p.STATE||p.FULL_NAME||p.NAME||'unit')+':'+(p._startYear??'?')+':'+(p._endYear??'?')+':'+bStr;
-  }
+function getTypeText(d,yr){const type=classifyUnit(d,yr);if(yr>=1861&&yr<=1865){if(type==='state')return'Union State';if(type==='confederate')return'Confederate State';if(type==='territory')return'Territory';return'Area';}if(type==='state'||type==='confederate')return'State';if(type==='territory')return'Territory';return'Area';}
 
-  function closeFixedTooltip() {
-    if (fixedTooltip) {
-      fixedTooltip.style('display', 'none').classed('tooltip-fixed', false);
-      fixedTooltip = null;
-    }
-  }
+function featureKey(d){const p=d.properties||{};const bounds=path.bounds(d);const bStr=bounds?`${bounds[0][0]},${bounds[0][1]},${bounds[1][0]},${bounds[1][1]}`:'nobounds';return(p.FIPS||p.STATE||p.FULL_NAME||p.NAME||'unit')+':'+(p._startYear??'?')+':'+(p._endYear??'?')+':'+bStr;}
 
-  function updateEventsList(year) {
-    const startYear = Math.max(1776, year - 20);
-    const recentEvents = events.filter(e => e.year >= startYear && e.year <= year);
-    recentEvents.sort((a, b) => b.year - a.year);
-    
-    if (recentEvents.length === 0) {
-      eventsContainer.innerHTML = '<div class="no-events">No events in the past 20 years</div>';
-      return;
-    }
-    
-    const eventsToShow = recentEvents.slice(0, 10);
-    eventsContainer.innerHTML = eventsToShow.map(ev => {
-      const isCurrent = ev.year === year;
-      return `<div class="event-item ${isCurrent?'current-year':''}" data-event='${JSON.stringify(ev).replace(/'/g, "&apos;")}'>
-        <div class="event-year">${ev.year}</div>
-        <div class="event-title">${ev.title}</div>
-      </div>`;
-    }).join('');
-    
-    eventsContainer.querySelectorAll('.event-item').forEach(item => {
-      item.addEventListener('mouseenter', (e) => {
-        if (fixedTooltip) return;
-        const ev = JSON.parse(item.dataset.event.replace(/&apos;/g, "'"));
-        tooltip.style('display','block')
-          .html(`<h3>${ev.title} (${ev.year})</h3><div class="tooltip-content">Click for details</div>`)
-          .style('left', Math.min(e.pageX+15, window.innerWidth-360)+'px')
-          .style('top', Math.max(e.pageY-50, 20)+'px');
-      });
-      item.addEventListener('mouseleave', () => {
-        if (!fixedTooltip) tooltip.style('display','none');
-      });
-      item.addEventListener('click', async (e) => {
-        const ev = JSON.parse(item.dataset.event.replace(/&apos;/g, "'"));
-        closeFixedTooltip();
-        tooltip.style('display','block').classed('tooltip-fixed',true)
-          .html(`<button class="tooltip-close">×</button><h3>${ev.title} (${ev.year})</h3><div class="tooltip-content">Loading...</div>`)
-          .style('left', Math.min(e.pageX+15, window.innerWidth-440)+'px')
-          .style('top', Math.max(e.pageY-50, 20)+'px');
-        fixedTooltip = tooltip;
-        tooltip.select('.tooltip-close').on('click', closeFixedTooltip);
-        const extract = ev.desc || await getWikiExtract(ev.wiki);
-        if (fixedTooltip === tooltip) {
-          tooltip.html(`<button class="tooltip-close">×</button><h3>${ev.title} (${ev.year})</h3>
-            <div class="tooltip-content">${extract}</div>
-            <div style="margin-top:14px"><a target="_blank" href="https://en.wikipedia.org/wiki/${ev.wiki}">Read more on Wikipedia →</a></div>`);
-          tooltip.select('.tooltip-close').on('click', closeFixedTooltip);
-        }
-      });
-    });
-  }
+function closeFixedTooltip(){if(fixedTooltip){fixedTooltip.style('display','none').classed('tooltip-fixed',false);fixedTooltip=null;}}
 
-  document.addEventListener('click', (e) => {
-    if (!e.target.closest('.tooltip') && !e.target.closest('.event') && !e.target.closest('.event-item')) {
-      closeFixedTooltip();
-    }
-  });
+function updateEventsList(year){const startYear=Math.max(1776,year-20);const recentEvents=events.filter(e=>e.year>=startYear&&e.year<=year);recentEvents.sort((a,b)=>b.year-a.year);if(recentEvents.length===0){eventsContainer.innerHTML='<div class="no-events">No events in the past 20 years</div>';return;}const eventsToShow=recentEvents.slice(0,10);eventsContainer.innerHTML=eventsToShow.map(ev=>{const isCurrent=ev.year===year;return`<div class="event-item ${isCurrent?'current-year':''}" data-event='${JSON.stringify(ev).replace(/'/g,"&apos;")}'><div class="event-year">${ev.year}</div><div class="event-title">${ev.title}</div></div>`;}).join('');eventsContainer.querySelectorAll('.event-item').forEach(item=>{item.addEventListener('mouseenter',e=>{if(fixedTooltip)return;const ev=JSON.parse(item.dataset.event.replace(/&apos;/g,"'"));tooltip.style('display','block').html(`<h3>${ev.title} (${ev.year})</h3><div class="tooltip-content">Click for details</div>`).style('left',Math.min(e.pageX+15,window.innerWidth-360)+'px').style('top',Math.max(e.pageY-50,20)+'px');});item.addEventListener('mouseleave',()=>{if(!fixedTooltip)tooltip.style('display','none');});item.addEventListener('click',async e=>{const ev=JSON.parse(item.dataset.event.replace(/&apos;/g,"'"));closeFixedTooltip();tooltip.style('display','block').classed('tooltip-fixed',true).html(`<button class="tooltip-close">×</button><h3>${ev.title} (${ev.year})</h3><div class="tooltip-content">Loading...</div>`).style('left',Math.min(e.pageX+15,window.innerWidth-440)+'px').style('top',Math.max(e.pageY-50,20)+'px');fixedTooltip=tooltip;tooltip.select('.tooltip-close').on('click',closeFixedTooltip);const extract=ev.desc||await getWikiExtract(ev.wiki);if(fixedTooltip===tooltip){tooltip.html(`<button class="tooltip-close">×</button><h3>${ev.title} (${ev.year})</h3><div class="tooltip-content">${extract}</div><div style="margin-top:14px"><a target="_blank" href="https://en.wikipedia.org/wiki/${ev.wiki}">Read more on Wikipedia →</a></div>`);tooltip.select('.tooltip-close').on('click',closeFixedTooltip);}});});}
 
-  let renderTimeout;
-  function scheduleRender() {
-    if (renderTimeout) clearTimeout(renderTimeout);
-    renderTimeout = setTimeout(() => {
-      if (currentYear !== lastRenderedYear) {
-        renderMap(currentYear);
-        lastRenderedYear = currentYear;
-      }
-    }, 16);
-  }
+document.addEventListener('click',e=>{if(!e.target.closest('.tooltip')&&!e.target.closest('.event')&&!e.target.closest('.event-item'))closeFixedTooltip();});
 
-  function renderMap(year) {
-    if (!dataReady) return;
-    updateEventsList(year);
-    
-    const confLegend = document.getElementById('confederate-legend');
-    const statesText = document.getElementById('states-legend-text');
-    
-    if (year >= 1861 && year <= 1865) {
-      confLegend.style.display = 'flex';
-      statesText.textContent = 'Union States';
-    } else {
-      confLegend.style.display = 'none';
-      statesText.textContent = 'States';
-    }
-    
-    // Filter active features and deduplicate by state name
-    const active = geo.features.filter(f => {
-      const s = f.properties._startYear, e = f.properties._endYear;
-      return year >= s && (year <= e || e >= 9999);
-    });
-    
-    // Deduplicate: keep only the most recent feature for each state name
-    const stateMap = new Map();
-    active.forEach(f => {
-      const name = f.properties.FULL_NAME || f.properties.NAME || 'unknown';
-      const existing = stateMap.get(name);
-      if (!existing || f.properties._startYear > existing.properties._startYear) {
-        stateMap.set(name, f);
-      }
-    });
-    const deduped = Array.from(stateMap.values());
-    
-    deduped.sort((a,b) => path.area(b) - path.area(a));
+let renderScheduled=false;function scheduleRender(){if(renderScheduled)return;renderScheduled=true;requestAnimationFrame(()=>{if(currentYear!==lastRenderedYear){renderMap(currentYear);lastRenderedYear=currentYear;}renderScheduled=false;});}
 
-    const units = gBound.selectAll('path.unit').data(deduped, featureKey);
-    units.exit().remove();
-    const newUnits = units.enter().append('path').attr('class', d => 'unit '+classifyUnit(d,year)).attr('d', path);
-    units.merge(newUnits).attr('class', d => 'unit '+classifyUnit(d,year)).attr('d', path);
+function renderMap(year){if(!dataReady)return;updateEventsList(year);const confLegend=document.getElementById('confederate-legend');const statesText=document.getElementById('states-legend-text');if(year>=1861&&year<=1865){confLegend.style.display='flex';statesText.textContent='Union States';}else{confLegend.style.display='none';statesText.textContent='States';}const active=geo.features.filter(f=>{const s=f.properties._startYear||0,e=f.properties._endYear||9999;return year>=s&&year<=e;});const stateMap=new Map();active.forEach(f=>{const name=f.properties.FULL_NAME||f.properties.NAME||'unknown';const existing=stateMap.get(name);if(!existing||f.properties._startYear>existing.properties._startYear)stateMap.set(name,f);});const deduped=Array.from(stateMap.values());deduped.sort((a,b)=>path.area(b)-path.area(a));const units=gBound.selectAll('path.unit').data(deduped,featureKey);units.exit().remove();const newUnits=units.enter().append('path').attr('class',d=>'unit '+classifyUnit(d,year)).attr('d',path);units.merge(newUnits).attr('class',d=>'unit '+classifyUnit(d,year)).attr('d',path);gBound.selectAll('path.unit').on('mouseover',(evt,d)=>{if(fixedTooltip)return;const name=d.properties.FULL_NAME||d.properties.NAME||'—';tooltip.style('display','block').html(`<h3>${name}</h3><div class="tooltip-content">${getTypeText(d,year)} • Click for details</div>`);}).on('mousemove',evt=>{if(!fixedTooltip)tooltip.style('left',(evt.pageX+15)+'px').style('top',(evt.pageY+15)+'px');}).on('mouseout',()=>{if(!fixedTooltip)tooltip.style('display','none');}).on('click',async(evt,d)=>{evt.stopPropagation();closeFixedTooltip();const name=d.properties.FULL_NAME||d.properties.NAME||'Unknown';tooltip.style('display','block').classed('tooltip-fixed',true).html(`<button class="tooltip-close">×</button><h3>${name}</h3><div class="tooltip-content">${getTypeText(d,year)} • Loading...</div>`).style('left',Math.min(evt.pageX+15,window.innerWidth-440)+'px').style('top',Math.max(evt.pageY-50,20)+'px');fixedTooltip=tooltip;tooltip.select('.tooltip-close').on('click',closeFixedTooltip);const desc=await getStateWikiExtract(name);if(fixedTooltip===tooltip){const stInfo=stateWikiMapping[name];const wTitle=stInfo?stInfo.wiki:name.replace(/\s+/g,'_');tooltip.html(`<button class="tooltip-close">×</button><h3>${name}</h3><div class="tooltip-content">${desc}</div><div style="margin-top:14px"><a target="_blank" href="https://en.wikipedia.org/wiki/${wTitle}">Read more on Wikipedia →</a></div>`);tooltip.select('.tooltip-close').on('click',closeFixedTooltip);}});const evActive=events.filter(e=>e.year<=year);const evSel=gEvents.selectAll('circle.event').data(evActive,d=>`${d.title}|${d.year}|${d.lat}|${d.lng}`);evSel.exit().remove();const newEv=evSel.enter().append('circle').attr('class',d=>d.year===year?'event current-year':'event').attr('r',12).attr('cx',d=>{const pt=projection([+d.lng,+d.lat]);return pt?pt[0]:-1000;}).attr('cy',d=>{const pt=projection([+d.lng,+d.lat]);return pt?pt[1]:-1000;}).style('opacity',d=>{const pt=projection([+d.lng,+d.lat]);return pt?(d.year===year?1:0.9):0;});evSel.merge(newEv).attr('class',d=>d.year===year?'event current-year':'event').attr('cx',d=>{const pt=projection([+d.lng,+d.lat]);return pt?pt[0]:-1000;}).attr('cy',d=>{const pt=projection([+d.lng,+d.lat]);return pt?pt[1]:-1000;}).style('opacity',d=>{const pt=projection([+d.lng,+d.lat]);return pt?(d.year===year?1:0.9):0;});gEvents.selectAll('circle.event').on('mouseover',(evt,d)=>{if(fixedTooltip)return;const txt=d.year===currentYear?`<h3>${d.title} (${d.year}) ✨</h3><div class="tooltip-content">Happening this year! Click for details</div>`:`<h3>${d.title} (${d.year})</h3><div class="tooltip-content">Click for details</div>`;tooltip.style('display','block').html(txt).style('left',(evt.pageX+15)+'px').style('top',(evt.pageY+15)+'px');}).on('mousemove',evt=>{if(!fixedTooltip)tooltip.style('left',(evt.pageX+15)+'px').style('top',(evt.pageY+15)+'px');}).on('mouseout',()=>{if(!fixedTooltip)tooltip.style('display','none');}).on('click',async(evt,d)=>{evt.stopPropagation();closeFixedTooltip();const isCurr=d.year===currentYear;const title=isCurr?`${d.title} (${d.year}) ✨`:`${d.title} (${d.year})`;tooltip.style('display','block').classed('tooltip-fixed',true).html(`<button class="tooltip-close">×</button><h3>${title}</h3><div class="tooltip-content">Loading...</div>`).style('left',Math.min(evt.pageX+15,window.innerWidth-440)+'px').style('top',Math.max(evt.pageY-50,20)+'px');fixedTooltip=tooltip;tooltip.select('.tooltip-close').on('click',closeFixedTooltip);const extract=d.desc||await getWikiExtract(d.wiki);if(fixedTooltip===tooltip){tooltip.html(`<button class="tooltip-close">×</button><h3>${title}</h3><div class="tooltip-content">${extract}</div><div style="margin-top:14px"><a target="_blank" href="https://en.wikipedia.org/wiki/${d.wiki}">Read more on Wikipedia →</a></div>`);tooltip.select('.tooltip-close').on('click',closeFixedTooltip);}});}
 
-    gBound.selectAll('path.unit')
-      .on('mouseover', (evt,d) => {
-        if (fixedTooltip) return;
-        const name = d.properties.FULL_NAME || d.properties.NAME || '—';
-        tooltip.style('display','block').html(`<h3>${name}</h3><div class="tooltip-content">${getTypeText(d,year)} • Click for details</div>`);
-      })
-      .on('mousemove', evt => {
-        if (!fixedTooltip) tooltip.style('left',(evt.pageX+15)+'px').style('top',(evt.pageY+15)+'px');
-      })
-      .on('mouseout', () => {
-        if (!fixedTooltip) tooltip.style('display','none');
-      })
-      .on('click', async (evt,d) => {
-        evt.stopPropagation();
-        closeFixedTooltip();
-        const name = d.properties.FULL_NAME || d.properties.NAME || 'Unknown';
-        tooltip.style('display','block').classed('tooltip-fixed',true)
-          .html(`<button class="tooltip-close">×</button><h3>${name}</h3><div class="tooltip-content">${getTypeText(d,year)} • Loading...</div>`)
-          .style('left', Math.min(evt.pageX+15, window.innerWidth-440)+'px')
-          .style('top', Math.max(evt.pageY-50, 20)+'px');
-        fixedTooltip = tooltip;
-        tooltip.select('.tooltip-close').on('click', closeFixedTooltip);
-        const desc = await getStateWikiExtract(name);
-        if (fixedTooltip === tooltip) {
-          const stInfo = stateWikiMapping[name];
-          const wTitle = stInfo ? stInfo.wiki : name.replace(/\s+/g, '_');
-          tooltip.html(`<button class="tooltip-close">×</button><h3>${name}</h3>
-            <div class="tooltip-content">${desc}</div>
-            <div style="margin-top:14px"><a target="_blank" href="https://en.wikipedia.org/wiki/${wTitle}">Read more on Wikipedia →</a></div>`);
-          tooltip.select('.tooltip-close').on('click', closeFixedTooltip);
-        }
-      });
+yearInput.addEventListener('input',()=>updateYear(+yearInput.value));playBtn.addEventListener('click',()=>{playing=!playing;playBtn.textContent=playing?'⏸ Pause Timeline':'▶ Play Timeline';if(playing)autoPlay();});
 
-    const evActive = events.filter(e => e.year <= year);
-    const evSel = gEvents.selectAll('circle.event').data(evActive, d => `${d.title}|${d.year}|${d.lat}|${d.lng}`);
-    evSel.exit().remove();
-    const newEv = evSel.enter().append('circle')
-      .attr('class', d => d.year===year ? 'event current-year' : 'event')
-      .attr('r', 10)
-      .attr('cx', d => { const pt = projection([+d.lng,+d.lat]); return pt ? pt[0] : -1000; })
-      .attr('cy', d => { const pt = projection([+d.lng,+d.lat]); return pt ? pt[1] : -1000; })
-      .style('opacity', d => { const pt = projection([+d.lng,+d.lat]); return pt ? (d.year===year?1:0.85) : 0; });
-    evSel.merge(newEv)
-      .attr('class', d => d.year===year ? 'event current-year' : 'event')
-      .attr('cx', d => { const pt = projection([+d.lng,+d.lat]); return pt ? pt[0] : -1000; })
-      .attr('cy', d => { const pt = projection([+d.lng,+d.lat]); return pt ? pt[1] : -1000; })
-      .style('opacity', d => { const pt = projection([+d.lng,+d.lat]); return pt ? (d.year===year?1:0.85) : 0; });
+function autoPlay(){if(!playing)return;let y=currentYear;const maxY=+yearInput.max;const tick=()=>{if(!playing)return;y=Math.min(y+1,maxY);updateYear(y);if(y<maxY)setTimeout(tick,300);else{playing=false;playBtn.textContent='▶ Play Timeline';}};setTimeout(tick,300);}
 
-    gEvents.selectAll('circle.event')
-      .on('mouseover', (evt,d) => {
-        if (fixedTooltip) return;
-        const txt = d.year===currentYear ? `<h3>${d.title} (${d.year}) ✨</h3><div class="tooltip-content">Happening this year! Click for details</div>` : `<h3>${d.title} (${d.year})</h3><div class="tooltip-content">Click for details</div>`;
-        tooltip.style('display','block').html(txt).style('left',(evt.pageX+15)+'px').style('top',(evt.pageY+15)+'px');
-      })
-      .on('mousemove', evt => {
-        if (!fixedTooltip) tooltip.style('left',(evt.pageX+15)+'px').style('top',(evt.pageY+15)+'px');
-      })
-      .on('mouseout', () => {
-        if (!fixedTooltip) tooltip.style('display','none');
-      })
-      .on('click', async (evt,d) => {
-        evt.stopPropagation();
-        closeFixedTooltip();
-        const isCurr = d.year===currentYear;
-        const title = isCurr ? `${d.title} (${d.year}) ✨` : `${d.title} (${d.year})`;
-        tooltip.style('display','block').classed('tooltip-fixed',true)
-          .html(`<button class="tooltip-close">×</button><h3>${title}</h3><div class="tooltip-content">Loading...</div>`)
-          .style('left', Math.min(evt.pageX+15, window.innerWidth-440)+'px')
-          .style('top', Math.max(evt.pageY-50, 20)+'px');
-        fixedTooltip = tooltip;
-        tooltip.select('.tooltip-close').on('click', closeFixedTooltip);
-        const extract = d.desc || await getWikiExtract(d.wiki);
-        if (fixedTooltip === tooltip) {
-          tooltip.html(`<button class="tooltip-close">×</button><h3>${title}</h3>
-            <div class="tooltip-content">${extract}</div>
-            <div style="margin-top:14px"><a target="_blank" href="https://en.wikipedia.org/wiki/${d.wiki}">Read more on Wikipedia →</a></div>`);
-          tooltip.select('.tooltip-close').on('click', closeFixedTooltip);
-        }
-      });
-  }
+let resizeTimeout;window.addEventListener('resize',()=>{if(resizeTimeout)clearTimeout(resizeTimeout);resizeTimeout=setTimeout(()=>{width=container.clientWidth;height=container.clientHeight;svg.attr('viewBox',`0 0 ${width} ${height}`);projection.translate([width/2,height/2]).scale(Math.min(width,height)*1.3);closeFixedTooltip();lastRenderedYear=-1;scheduleRender();},100);});
 
-  yearInput.addEventListener('input', () => updateYear(+yearInput.value));
-  playBtn.addEventListener('click', () => {
-    playing = !playing;
-    playBtn.textContent = playing ? '⏸ Pause' : '▶ Play';
-    if (playing) autoPlay();
-  });
-
-  function autoPlay(){
-    if (!playing) return;
-    let y = currentYear;
-    const maxY = +yearInput.max;
-    const tick = () => {
-      if (!playing) return;
-      y = Math.min(y+1, maxY);
-      updateYear(y);
-      if (y < maxY) setTimeout(tick, 400);
-      else { playing = false; playBtn.textContent = '▶ Play'; }
-    };
-    setTimeout(tick, 400);
-  }
-
-  let resizeTimeout;
-  window.addEventListener('resize', () => {
-    if (resizeTimeout) clearTimeout(resizeTimeout);
-    resizeTimeout = setTimeout(() => {
-      width = window.innerWidth; 
-      height = window.innerHeight - 180;
-      svg.attr('viewBox', `0 0 ${width} ${height}`);
-      projection.translate([width/2, height/2]).scale(Math.min(width, height) * 1.6);
-      closeFixedTooltip();
-      lastRenderedYear = -1;
-      scheduleRender();
-    }, 100);
-  });
-
-  (async function(){
-    try {
-      statusEl.textContent = 'Loading map data...';
-      const embeddedEvents = [
-        {"year":1776,"title":"Declaration of Independence","lat":39.948,"lng":-75.150,"wiki":"United_States_Declaration_of_Independence","desc":"The Declaration of Independence was adopted on July 4, 1776, declaring independence from British rule."},
-        {"year":1787,"title":"Constitution signed","lat":39.948,"lng":-75.150,"wiki":"United_States_Constitution","desc":"The Constitution was signed on September 17, 1787, establishing the framework of the US government."},
-        {"year":1803,"title":"Louisiana Purchase","lat":38.627,"lng":-90.199,"wiki":"Louisiana_Purchase","desc":"The Louisiana Purchase doubled the size of the United States, acquiring approximately 827,000 square miles from France."},
-        {"year":1812,"title":"War of 1812 begins","lat":38.907,"lng":-77.037,"wiki":"War_of_1812","desc":"The War of 1812 was fought between the United States and Great Britain over maritime rights and trade restrictions."},
-        {"year":1820,"title":"Missouri Compromise","lat":38.573,"lng":-92.603,"wiki":"Missouri_Compromise","desc":"The Missouri Compromise attempted to balance slave and free states."},
-        {"year":1830,"title":"Indian Removal Act","lat":38.907,"lng":-77.037,"wiki":"Indian_Removal_Act","desc":"The Indian Removal Act authorized forced relocation of Native American tribes to lands west of the Mississippi River."},
-        {"year":1846,"title":"Mexican-American War","lat":29.423,"lng":-98.495,"wiki":"Mexican–American_War","desc":"The Mexican-American War resulted in the US acquiring California, Nevada, Utah, and parts of several other states."},
-        {"year":1848,"title":"California Gold Rush","lat":38.812,"lng":-120.905,"wiki":"California_Gold_Rush","desc":"The California Gold Rush brought hundreds of thousands of migrants to California and transformed the economy."},
-        {"year":1850,"title":"Compromise of 1850","lat":38.907,"lng":-77.037,"wiki":"Compromise_of_1850","desc":"The Compromise of 1850 was a package of bills that attempted to resolve territorial and slavery controversies."},
-        {"year":1854,"title":"Kansas-Nebraska Act","lat":38.907,"lng":-77.037,"wiki":"Kansas–Nebraska_Act","desc":"The Kansas-Nebraska Act allowed settlers to determine whether they would allow slavery, leading to violent conflicts."},
-        {"year":1861,"title":"Civil War begins","lat":32.752,"lng":-79.874,"wiki":"Battle_of_Fort_Sumter","desc":"The Civil War began with the Confederate attack on Fort Sumter in Charleston Harbor, South Carolina."},
-        {"year":1863,"title":"Gettysburg Address","lat":39.830,"lng":-77.231,"wiki":"Gettysburg_Address","desc":"President Lincoln delivered the Gettysburg Address, one of the most famous speeches in American history."},
-        {"year":1865,"title":"Civil War ends","lat":38.907,"lng":-77.037,"wiki":"Conclusion_of_the_American_Civil_War","desc":"The Civil War ended with Confederate surrender, preserving the Union and ending slavery."},
-        {"year":1865,"title":"13th Amendment","lat":38.907,"lng":-77.037,"wiki":"Thirteenth_Amendment_to_the_United_States_Constitution","desc":"The 13th Amendment abolished slavery throughout the United States."},
-        {"year":1876,"title":"Battle of Little Bighorn","lat":45.565,"lng":-107.438,"wiki":"Battle_of_the_Little_Bighorn","desc":"A victory for the Lakota, Northern Cheyenne, and Arapaho tribes against the US 7th Cavalry."},
-        {"year":1890,"title":"Wounded Knee","lat":43.148,"lng":-102.368,"wiki":"Wounded_Knee_Massacre","desc":"The Wounded Knee Massacre marked the end of the Indian Wars."},
-        {"year":1898,"title":"Spanish-American War","lat":25.774,"lng":-80.197,"wiki":"Spanish–American_War","desc":"The Spanish-American War resulted in the US acquiring Puerto Rico, Guam, and the Philippines."},
-        {"year":1917,"title":"US enters WWI","lat":38.907,"lng":-77.037,"wiki":"United_States_entry_into_World_War_I","desc":"The United States entered World War I in April 1917, tipping the balance in favor of the Allies."},
-        {"year":1920,"title":"19th Amendment","lat":38.907,"lng":-77.037,"wiki":"Nineteenth_Amendment_to_the_United_States_Constitution","desc":"The 19th Amendment granted women the right to vote nationwide."},
-        {"year":1929,"title":"Stock Market Crash","lat":40.706,"lng":-74.009,"wiki":"Wall_Street_Crash_of_1929","desc":"The 1929 crash triggered the Great Depression, the worst economic downturn in modern history."},
-        {"year":1933,"title":"New Deal begins","lat":38.907,"lng":-77.037,"wiki":"New_Deal","desc":"President Franklin D. Roosevelt launched the New Deal to combat the Great Depression."},
-        {"year":1941,"title":"Pearl Harbor","lat":21.364,"lng":-157.95,"wiki":"Attack_on_Pearl_Harbor","desc":"The Japanese attack on Pearl Harbor brought the United States into World War II."},
-        {"year":1944,"title":"D-Day","lat":49.414,"lng":-0.818,"wiki":"Normandy_landings","desc":"D-Day marked the beginning of the liberation of Western Europe from Nazi control."},
-        {"year":1945,"title":"Atomic bombing","lat":34.391,"lng":132.451,"wiki":"Atomic_bombings_of_Hiroshima_and_Nagasaki","desc":"The atomic bombings of Hiroshima and Nagasaki led to Japan's surrender and the end of WWII."},
-        {"year":1945,"title":"UN founded","lat":40.749,"lng":-73.968,"wiki":"History_of_the_United_Nations","desc":"The United Nations was established to promote international cooperation."},
-        {"year":1950,"title":"Korean War","lat":37.566,"lng":126.978,"wiki":"Korean_War","desc":"The Korean War began when North Korea invaded South Korea."},
-        {"year":1954,"title":"Brown v. Board","lat":39.047,"lng":-95.678,"wiki":"Brown_v._Board_of_Education","desc":"The Supreme Court ruled that racial segregation in public schools was unconstitutional."},
-        {"year":1963,"title":"March on Washington","lat":38.889,"lng":-77.035,"wiki":"March_on_Washington_for_Jobs_and_Freedom","desc":"The march culminated in Martin Luther King Jr.'s 'I Have a Dream' speech."},
-        {"year":1964,"title":"Civil Rights Act","lat":38.907,"lng":-77.037,"wiki":"Civil_Rights_Act_of_1964","desc":"The Civil Rights Act outlawed discrimination based on race, color, religion, sex, or national origin."},
-        {"year":1969,"title":"Moon landing","lat":28.572,"lng":-80.648,"wiki":"Apollo_11","desc":"Apollo 11 successfully landed the first humans on the Moon."},
-        {"year":1972,"title":"Watergate","lat":38.907,"lng":-77.037,"wiki":"Watergate_scandal","desc":"The Watergate scandal led to President Nixon's resignation."},
-        {"year":1989,"title":"Berlin Wall falls","lat":52.516,"lng":13.377,"wiki":"Fall_of_the_Berlin_Wall","desc":"The fall of the Berlin Wall symbolized the end of the Cold War."},
-        {"year":1991,"title":"Gulf War","lat":29.375,"lng":47.977,"wiki":"Gulf_War","desc":"The Gulf War liberated Kuwait from Iraqi occupation."},
-        {"year":2001,"title":"9/11 attacks","lat":40.711,"lng":-74.013,"wiki":"September_11_attacks","desc":"The September 11 terrorist attacks resulted in nearly 3,000 deaths and reshaped American foreign policy."},
-        {"year":2008,"title":"Financial Crisis","lat":40.706,"lng":-74.009,"wiki":"Financial_crisis_of_2007–2008","desc":"The 2008 financial crisis caused the Great Recession."},
-        {"year":2020,"title":"COVID-19 pandemic","lat":40.712,"lng":-74.006,"wiki":"COVID-19_pandemic_in_the_United_States","desc":"The COVID-19 pandemic caused widespread disruption across the United States."}
-      ];
-      const DATA_URL = 'https://raw.githubusercontent.com/lmullen/historical-us-boundaries/master/us.json';
-      const topo = await fetch(DATA_URL).then(r => r.json());
-      geo = topojson.feature(topo, topo.objects.states);
-      
-      // List of current 50 states that should display through 2025
-      const currentStates = [
-        'Alabama','Alaska','Arizona','Arkansas','California','Colorado','Connecticut','Delaware',
-        'Florida','Georgia','Hawaii','Idaho','Illinois','Indiana','Iowa','Kansas','Kentucky',
-        'Louisiana','Maine','Maryland','Massachusetts','Michigan','Minnesota','Mississippi',
-        'Missouri','Montana','Nebraska','Nevada','New Hampshire','New Jersey','New Mexico',
-        'New York','North Carolina','North Dakota','Ohio','Oklahoma','Oregon','Pennsylvania',
-        'Rhode Island','South Carolina','South Dakota','Tennessee','Texas','Utah','Vermont',
-        'Virginia','Washington','West Virginia','Wisconsin','Wyoming'
-      ];
-      
-      geo.features.forEach(f => {
-        const p = f.properties || {};
-        p._startYear = p.START_DATE ? +String(p.START_DATE).slice(0,4) : -9999;
-        p._endYear = p.END_DATE ? +String(p.END_DATE).slice(0,4) : 9999;
-        
-        // Extend current states to 2025 if their end date is before that
-        const name = p.FULL_NAME || p.NAME || '';
-        const isCurrentState = currentStates.some(state => name.includes(state));
-        const isState = (p.TERR_TYPE || '').toLowerCase().includes('state');
-        
-        if (isCurrentState && isState && p._endYear < 2025) {
-          p._endYear = 2025;
-        }
-      });
-      events = embeddedEvents;
-      dataReady = true;
-      statusEl.textContent = 'Ready! Drag the slider or press Play to explore US history.';
-      scheduleRender();
-    } catch (e) {
-      console.error('Load failed:', e);
-      statusEl.textContent = 'Failed to load map data. Please check your connection.';
-    }
-  })();
+(async function(){try{statusEl.textContent='Loading map data...';const embeddedEvents=[{"year":1776,"title":"Declaration of Independence","lat":39.948,"lng":-75.150,"wiki":"United_States_Declaration_of_Independence","desc":"The Declaration of Independence was adopted on July 4, 1776, declaring independence from British rule."},{"year":1783,"title":"Treaty of Paris","lat":40.712,"lng":-74.006,"wiki":"Treaty_of_Paris_(1783)","desc":"The Treaty of Paris officially ended the Revolutionary War and recognized American independence."},{"year":1787,"title":"Constitution signed","lat":39.948,"lng":-75.150,"wiki":"United_States_Constitution","desc":"The Constitution was signed on September 17, 1787, establishing the framework of the US government."},{"year":1789,"title":"Washington inaugurated","lat":40.706,"lng":-74.009,"wiki":"First_inauguration_of_George_Washington","desc":"George Washington was inaugurated as the first President of the United States."},{"year":1791,"title":"Bill of Rights ratified","lat":39.948,"lng":-75.150,"wiki":"United_States_Bill_of_Rights","desc":"The Bill of Rights, the first ten amendments to the Constitution, was ratified."},{"year":1803,"title":"Louisiana Purchase","lat":38.627,"lng":-90.199,"wiki":"Louisiana_Purchase","desc":"The Louisiana Purchase doubled the size of the United States, acquiring approximately 827,000 square miles from France."},{"year":1812,"title":"War of 1812 begins","lat":38.907,"lng":-77.037,"wiki":"War_of_1812","desc":"The War of 1812 was fought between the United States and Great Britain over maritime rights and trade restrictions."},{"year":1814,"title":"Star-Spangled Banner","lat":39.290,"lng":-76.610,"wiki":"Star-Spangled_Banner","desc":"Francis Scott Key wrote the Star-Spangled Banner during the Battle of Baltimore."},{"year":1820,"title":"Missouri Compromise","lat":38.573,"lng":-92.603,"wiki":"Missouri_Compromise","desc":"The Missouri Compromise attempted to balance slave and free states."},{"year":1823,"title":"Monroe Doctrine","lat":38.907,"lng":-77.037,"wiki":"Monroe_Doctrine","desc":"President Monroe declared that European powers should no longer colonize the Americas."},{"year":1830,"title":"Indian Removal Act","lat":38.907,"lng":-77.037,"wiki":"Indian_Removal_Act","desc":"The Indian Removal Act authorized forced relocation of Native American tribes to lands west of the Mississippi River."},{"year":1836,"title":"Battle of the Alamo","lat":29.425,"lng":-98.486,"wiki":"Battle_of_the_Alamo","desc":"The Battle of the Alamo was a pivotal event in the Texas Revolution."},{"year":1838,"title":"Trail of Tears","lat":35.517,"lng":-84.520,"wiki":"Trail_of_Tears","desc":"The forced relocation of Native American nations resulted in thousands of deaths."},{"year":1846,"title":"Mexican-American War","lat":29.423,"lng":-98.495,"wiki":"Mexican–American_War","desc":"The Mexican-American War resulted in the US acquiring California, Nevada, Utah, and parts of several other states."},{"year":1848,"title":"California Gold Rush","lat":38.812,"lng":-120.905,"wiki":"California_Gold_Rush","desc":"The California Gold Rush brought hundreds of thousands of migrants to California and transformed the economy."},{"year":1850,"title":"Compromise of 1850","lat":38.907,"lng":-77.037,"wiki":"Compromise_of_1850","desc":"The Compromise of 1850 was a package of bills that attempted to resolve territorial and slavery controversies."},{"year":1854,"title":"Kansas-Nebraska Act","lat":38.907,"lng":-77.037,"wiki":"Kansas–Nebraska_Act","desc":"The Kansas-Nebraska Act allowed settlers to determine whether they would allow slavery, leading to violent conflicts."},{"year":1857,"title":"Dred Scott Decision","lat":38.907,"lng":-77.037,"wiki":"Dred_Scott_v._Sandford","desc":"The Supreme Court ruled that African Americans could not be citizens, intensifying tensions before the Civil War."},{"year":1861,"title":"Civil War begins","lat":32.752,"lng":-79.874,"wiki":"Battle_of_Fort_Sumter","desc":"The Civil War began with the Confederate attack on Fort Sumter in Charleston Harbor, South Carolina."},{"year":1863,"title":"Gettysburg Address","lat":39.830,"lng":-77.231,"wiki":"Gettysburg_Address","desc":"President Lincoln delivered the Gettysburg Address, one of the most famous speeches in American history."},{"year":1865,"title":"Civil War ends","lat":38.907,"lng":-77.037,"wiki":"Conclusion_of_the_American_Civil_War","desc":"The Civil War ended with Confederate surrender, preserving the Union and ending slavery."},{"year":1865,"title":"13th Amendment","lat":38.907,"lng":-77.037,"wiki":"Thirteenth_Amendment_to_the_United_States_Constitution","desc":"The 13th Amendment abolished slavery throughout the United States."},{"year":1867,"title":"Alaska Purchase","lat":61.218,"lng":-149.900,"wiki":"Alaska_Purchase","desc":"The United States purchased Alaska from Russia for $7.2 million, known as Seward's Folly at the time."},{"year":1869,"title":"Transcontinental Railroad","lat":41.133,"lng":-112.099,"wiki":"First_transcontinental_railroad","desc":"The First Transcontinental Railroad was completed at Promontory Summit, Utah, connecting the east and west coasts."},{"year":1876,"title":"Battle of Little Bighorn","lat":45.565,"lng":-107.438,"wiki":"Battle_of_the_Little_Bighorn","desc":"A victory for the Lakota, Northern Cheyenne, and Arapaho tribes against the US 7th Cavalry."},{"year":1886,"title":"Statue of Liberty dedicated","lat":40.689,"lng":-74.045,"wiki":"Statue_of_Liberty","desc":"The Statue of Liberty was dedicated as a gift from France, symbolizing freedom and democracy."},{"year":1890,"title":"Wounded Knee","lat":43.148,"lng":-102.368,"wiki":"Wounded_Knee_Massacre","desc":"The Wounded Knee Massacre marked the end of the Indian Wars."},{"year":1896,"title":"Plessy v. Ferguson","lat":38.907,"lng":-77.037,"wiki":"Plessy_v._Ferguson","desc":"The Supreme Court upheld racial segregation under the 'separate but equal' doctrine."},{"year":1898,"title":"Spanish-American War","lat":25.774,"lng":-80.197,"wiki":"Spanish–American_War","desc":"The Spanish-American War resulted in the US acquiring Puerto Rico, Guam, and the Philippines."},{"year":1906,"title":"San Francisco Earthquake","lat":37.775,"lng":-122.419,"wiki":"1906_San_Francisco_earthquake","desc":"The great San Francisco earthquake and fire destroyed much of the city and killed thousands."},{"year":1912,"title":"Arizona & New Mexico statehood","lat":34.048,"lng":-111.094,"wiki":"Arizona","desc":"Arizona and New Mexico were admitted as the 47th and 48th states."},{"year":1917,"title":"US enters WWI","lat":38.907,"lng":-77.037,"wiki":"United_States_entry_into_World_War_I","desc":"The United States entered World War I in April 1917, tipping the balance in favor of the Allies."},{"year":1920,"title":"19th Amendment","lat":38.907,"lng":-77.037,"wiki":"Nineteenth_Amendment_to_the_United_States_Constitution","desc":"The 19th Amendment granted women the right to vote nationwide."},{"year":1929,"title":"Stock Market Crash","lat":40.706,"lng":-74.009,"wiki":"Wall_Street_Crash_of_1929","desc":"The 1929 crash triggered the Great Depression, the worst economic downturn in modern history."},{"year":1933,"title":"New Deal begins","lat":38.907,"lng":-77.037,"wiki":"New_Deal","desc":"President Franklin D. Roosevelt launched the New Deal to combat the Great Depression."},{"year":1941,"title":"Pearl Harbor","lat":21.364,"lng":-157.95,"wiki":"Attack_on_Pearl_Harbor","desc":"The Japanese attack on Pearl Harbor brought the United States into World War II."},{"year":1944,"title":"D-Day","lat":49.414,"lng":-0.818,"wiki":"Normandy_landings","desc":"D-Day marked the beginning of the liberation of Western Europe from Nazi control."},{"year":1945,"title":"Atomic bombing","lat":34.391,"lng":132.451,"wiki":"Atomic_bombings_of_Hiroshima_and_Nagasaki","desc":"The atomic bombings of Hiroshima and Nagasaki led to Japan's surrender and the end of WWII."},{"year":1945,"title":"UN founded","lat":40.749,"lng":-73.968,"wiki":"History_of_the_United_Nations","desc":"The United Nations was established to promote international cooperation."},{"year":1950,"title":"Korean War","lat":37.566,"lng":126.978,"wiki":"Korean_War","desc":"The Korean War began when North Korea invaded South Korea."},{"year":1954,"title":"Brown v. Board","lat":39.047,"lng":-95.678,"wiki":"Brown_v._Board_of_Education","desc":"The Supreme Court ruled that racial segregation in public schools was unconstitutional."},{"year":1959,"title":"Alaska statehood","lat":61.218,"lng":-149.900,"wiki":"Alaska","desc":"Alaska was admitted as the 49th state of the United States."},{"year":1959,"title":"Hawaii statehood","lat":21.307,"lng":-157.858,"wiki":"Hawaii","desc":"Hawaii was admitted as the 50th state of the United States."},{"year":1962,"title":"Cuban Missile Crisis","lat":38.907,"lng":-77.037,"wiki":"Cuban_Missile_Crisis","desc":"The Cuban Missile Crisis brought the world to the brink of nuclear war."},{"year":1963,"title":"March on Washington","lat":38.889,"lng":-77.035,"wiki":"March_on_Washington_for_Jobs_and_Freedom","desc":"The march culminated in Martin Luther King Jr.'s 'I Have a Dream' speech."},{"year":1963,"title":"JFK assassination","lat":32.777,"lng":-96.808,"wiki":"Assassination_of_John_F._Kennedy","desc":"President John F. Kennedy was assassinated in Dallas, Texas."},{"year":1964,"title":"Civil Rights Act","lat":38.907,"lng":-77.037,"wiki":"Civil_Rights_Act_of_1964","desc":"The Civil Rights Act outlawed discrimination based on race, color, religion, sex, or national origin."},{"year":1968,"title":"MLK assassination","lat":35.138,"lng":-90.051,"wiki":"Assassination_of_Martin_Luther_King_Jr.","desc":"Civil rights leader Martin Luther King Jr. was assassinated in Memphis, Tennessee."},{"year":1969,"title":"Moon landing","lat":28.572,"lng":-80.648,"wiki":"Apollo_11","desc":"Apollo 11 successfully landed the first humans on the Moon."},{"year":1972,"title":"Watergate","lat":38.907,"lng":-77.037,"wiki":"Watergate_scandal","desc":"The Watergate scandal led to President Nixon's resignation."},{"year":1973,"title":"Roe v. Wade","lat":38.907,"lng":-77.037,"wiki":"Roe_v._Wade","desc":"The Supreme Court established a constitutional right to abortion."},{"year":1980,"title":"Mount St. Helens erupts","lat":46.191,"lng":-122.194,"wiki":"1980_eruption_of_Mount_St._Helens","desc":"Mount St. Helens erupted in Washington state, killing 57 people and causing massive destruction."},{"year":1986,"title":"Challenger disaster","lat":28.573,"lng":-80.651,"wiki":"Space_Shuttle_Challenger_disaster","desc":"The Space Shuttle Challenger broke apart 73 seconds after launch, killing all seven crew members."},{"year":1989,"title":"Berlin Wall falls","lat":52.516,"lng":13.377,"wiki":"Fall_of_the_Berlin_Wall","desc":"The fall of the Berlin Wall symbolized the end of the Cold War."},{"year":1991,"title":"Gulf War","lat":29.375,"lng":47.977,"wiki":"Gulf_War","desc":"The Gulf War liberated Kuwait from Iraqi occupation."},{"year":1992,"title":"LA Riots","lat":34.052,"lng":-118.243,"wiki":"1992_Los_Angeles_riots","desc":"The Los Angeles riots followed the acquittal of police officers in the Rodney King beating case."},{"year":1995,"title":"Oklahoma City Bombing","lat":35.473,"lng":-97.517,"wiki":"Oklahoma_City_bombing","desc":"The Oklahoma City bombing killed 168 people in the deadliest act of domestic terrorism in US history."},{"year":2001,"title":"9/11 attacks","lat":40.711,"lng":-74.013,"wiki":"September_11_attacks","desc":"The September 11 terrorist attacks resulted in nearly 3,000 deaths and reshaped American foreign policy."},{"year":2005,"title":"Hurricane Katrina","lat":29.951,"lng":-90.072,"wiki":"Hurricane_Katrina","desc":"Hurricane Katrina devastated New Orleans and the Gulf Coast, killing over 1,800 people."},{"year":2008,"title":"Financial Crisis","lat":40.706,"lng":-74.009,"wiki":"Financial_crisis_of_2007–2008","desc":"The 2008 financial crisis caused the Great Recession."},{"year":2008,"title":"Obama elected","lat":41.878,"lng":-87.629,"wiki":"Barack_Obama","desc":"Barack Obama was elected as the first African American president of the United States."},{"year":2013,"title":"Boston Marathon bombing","lat":42.349,"lng":-71.082,"wiki":"Boston_Marathon_bombing","desc":"Two bombs exploded near the finish line of the Boston Marathon, killing three and injuring hundreds."},{"year":2020,"title":"COVID-19 pandemic","lat":40.712,"lng":-74.006,"wiki":"COVID_19_pandemic_in_the_United_States","desc":"The COVID-19 pandemic caused widespread disruption across the United States."}];
+const DATA_URL='https://raw.githubusercontent.com/lmullen/historical-us-boundaries/master/us.json';
+const response=await fetch(DATA_URL);
+if(!response.ok)throw new Error('Failed to fetch map data');
+const topo=await response.json();
+geo=topojson.feature(topo,topo.objects.states);
+const currentStates=['Alabama','Alaska','Arizona','Arkansas','California','Colorado','Connecticut','Delaware','Florida','Georgia','Hawaii','Idaho','Illinois','Indiana','Iowa','Kansas','Kentucky','Louisiana','Maine','Maryland','Massachusetts','Michigan','Minnesota','Mississippi','Missouri','Montana','Nebraska','Nevada','New Hampshire','New Jersey','New Mexico','New York','North Carolina','North Dakota','Ohio','Oklahoma','Oregon','Pennsylvania','Rhode Island','South Carolina','South Dakota','Tennessee','Texas','Utah','Vermont','Virginia','Washington','West Virginia','Wisconsin','Wyoming'];
+geo.features.forEach(f=>{const p=f.properties||{};p._startYear=p.START_DATE?+String(p.START_DATE).slice(0,4):1783;p._endYear=p.END_DATE?+String(p.END_DATE).slice(0,4):9999;const name=p.FULL_NAME||p.NAME||'';const isCurrentState=currentStates.some(state=>name.includes(state));const isState=(p.TERR_TYPE||'').toLowerCase().includes('state');if(isCurrentState&&isState&&p._endYear<2025)p._endYear=2025;});
+events=embeddedEvents;
+dataReady=true;
+statusEl.textContent='Ready! Explore US history by dragging the slider.';
+scheduleRender();
+}catch(e){console.error('Load failed:',e);statusEl.textContent='Failed to load map data: '+e.message;}})();
 })();
 </script>
 </body>
