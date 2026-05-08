@@ -567,51 +567,87 @@ export default function ThermalSenseApp() {
   // selected starts null — set it once FLEET loads
   const [selected, setSelected] = useState(null);
   const [tempCurve, setTempCurve] = useState([]);
+  // Label shown in the chart subtitle, e.g. "letzte 24 h" or "08.04.2025"
+  const [tempCurveLabel, setTempCurveLabel] = useState("letzte 24 h");
 
   useEffect(() => {
     if (FLEET.length > 0 && !selected) {
       setSelected(FLEET[0]);
-      // tempCurve will be fetched by the selected?.id effect below
     }
   }, [FLEET]);
 
-  // Fetch real temperature history whenever the selected device changes.
-  // Falls back to the previous 24 h window if the most recent window has no data.
+  // ── Fetch temperature history for the selected device ──────────────────────
+  // Strategy:
+  //   1. Try the last 24 h.
+  //   2. If empty, fall back to the most recent N rows ever recorded for this
+  //      device — regardless of how long ago they are.
   useEffect(() => {
     if (!selected) return;
     const headers = { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` };
 
-    const fetchWindow = (from, to) => {
-      const params = new URLSearchParams({
-        device_id: `eq.${selected.id}`,
-        timestamp:  `gte.${from}`,
-        select:     "timestamp,cpu_temp",
-        order:      "timestamp.asc",
-      });
-      if (to) params.append("timestamp", `lte.${to}`);
-      return fetch(`${SUPABASE_URL}/rest/v1/telemetry?${params}`, { headers })
-        .then(r => r.json())
-        .then(rows => (Array.isArray(rows) ? rows : []).filter(r => r.cpu_temp != null));
-    };
-
-    const now        = Date.now();
-    const since24h   = new Date(now - 24 * 60 * 60 * 1000).toISOString();
-    const since48h   = new Date(now - 48 * 60 * 60 * 1000).toISOString();
-
-    fetchWindow(since24h)
-      .then(rows => {
-        if (rows.length > 0) return rows;
-        // No data in last 24 h — try the 24 h before that
-        return fetchWindow(since48h, since24h);
-      })
-      .then(rows => {
-        setTempCurve(rows.map(r => ({
+    // Helper: build a mapped array from raw Supabase rows
+    const mapRows = rows =>
+      rows
+        .filter(r => r.cpu_temp != null)
+        .map(r => ({
           h: new Date(r.timestamp).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" }),
           t: Math.round(parseFloat(r.cpu_temp)),
-        })));
+        }));
+
+    // Step 1 — last 24 h
+    const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const params24h = new URLSearchParams({
+      device_id: `eq.${selected.id}`,
+      timestamp:  `gte.${since24h}`,
+      select:     "timestamp,cpu_temp",
+      order:      "timestamp.asc",
+    });
+
+    fetch(`${SUPABASE_URL}/rest/v1/telemetry?${params24h}`, { headers })
+      .then(r => r.json())
+      .then(rows => {
+        const valid = Array.isArray(rows) ? rows.filter(r => r.cpu_temp != null) : [];
+        if (valid.length > 0) {
+          setTempCurve(mapRows(valid));
+          setTempCurveLabel("letzte 24 h");
+          return;
+        }
+
+        // Step 2 — no recent data: fetch the most recent 144 rows (≈ 2.4 h at
+        // 60 s interval, but works for any gap) and group them by their actual day
+        const paramsLatest = new URLSearchParams({
+          device_id: `eq.${selected.id}`,
+          select:     "timestamp,cpu_temp",
+          order:      "timestamp.desc",
+          limit:      "144",
+        });
+
+        return fetch(`${SUPABASE_URL}/rest/v1/telemetry?${paramsLatest}`, { headers })
+          .then(r => r.json())
+          .then(latestRows => {
+            const validLatest = Array.isArray(latestRows)
+              ? latestRows.filter(r => r.cpu_temp != null)
+              : [];
+
+            if (validLatest.length === 0) {
+              setTempCurve([]);
+              setTempCurveLabel("keine Daten");
+              return;
+            }
+
+            // Rows came back newest-first; reverse so the chart reads left→right
+            validLatest.reverse();
+
+            // Derive a human-readable label from the oldest timestamp in the set
+            const dateLabel = new Date(validLatest[0].timestamp)
+              .toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" });
+            setTempCurveLabel(dateLabel);
+            setTempCurve(mapRows(validLatest));
+          });
       })
       .catch(err => console.error("Temp history fetch error:", err));
   }, [selected?.id]);
+
   const [report, setReport] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [showReport, setShowReport] = useState(false);
@@ -629,7 +665,6 @@ export default function ThermalSenseApp() {
 
   const handleSelectDevice = (d) => {
     setSelected(d);
-    // tempCurve is fetched by the selected?.id useEffect above
   };
 
   // Typewriter effect for report
@@ -923,13 +958,14 @@ _Bericht erstellt von thermalMS KI-Analyse-Engine · Modell: Claude Sonnet · ${
               <div className="ts-card">
                 <div className="ts-card-header">
                   <span className="ts-card-title">TEMPERATURVERLAUF</span>
-                  <span className="ts-card-subtitle">letzte 24 h · {tempCurve.length} Messpunkte</span>
+                  {/* Label updates dynamically: "letzte 24 h", a date, or "keine Daten" */}
+                  <span className="ts-card-subtitle">{tempCurveLabel} · {tempCurve.length} Messpunkte</span>
                 </div>
                 <div className="ts-chart-area">
                   {tempCurve.length === 0 ? (
                     <div style={{height:140,display:"flex",alignItems:"center",justifyContent:"center",
                       color:"#9198a1",fontSize:12,fontFamily:"'IBM Plex Mono',monospace"}}>
-                      Keine Messdaten in den letzten 24 h
+                      Keine Messdaten verfügbar
                     </div>
                   ) : (
                   <ResponsiveContainer width="100%" height={140}>
