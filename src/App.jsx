@@ -562,6 +562,7 @@ export default function ThermalSenseApp() {
         };
       });
       setFLEET(mapped);
+      if (mapped.length > 0) setSelected(mapped[0]);
     })
     .catch(err => {
       console.error("Supabase fetch error:", err);
