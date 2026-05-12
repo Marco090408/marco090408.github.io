@@ -504,6 +504,8 @@ function renderReport(text) {
 export default function ThermalSenseApp() {
   // FLEET state lives here — hooks must be inside a component
   const [FLEET, setFLEET] = useState([]);
+  const [loaded, setLoaded] = useState(false);
+  const [fetchError, setFetchError] = useState(null);
 
   // How many recent rows per device to use for the throttling average
   const RECENT_THROTTLE_ROWS = 60;
@@ -561,7 +563,11 @@ export default function ThermalSenseApp() {
       });
       setFLEET(mapped);
     })
-    .catch(err => console.error("Supabase fetch error:", err));
+    .catch(err => {
+      console.error("Supabase fetch error:", err);
+      setFetchError(err?.message || "Unbekannter Fehler");
+    })
+    .finally(() => setLoaded(true));
   }, []);
 
   // selected starts null — set it once FLEET loads
@@ -790,14 +796,32 @@ _Bericht erstellt von thermalMS KI-Analyse-Engine · Modell: Claude Sonnet · ${
   const statusLabel = { kritisch: "KRITISCH", warnung: "WARNUNG", ok: "OK" };
   const tempColor = (t) => t >= 90 ? "#cf222e" : t >= 80 ? "#bc4c00" : "#1a7f37";
 
-  // Don't render until FLEET and selected are ready
-  if (!selected) {
+  if (!loaded) {
     return (
       <>
         <FontStyle />
         <div className="ts-app" style={{justifyContent:"center",alignItems:"center"}}>
           <div style={{fontFamily:"'IBM Plex Mono',monospace",color:"#9198a1",fontSize:13,marginTop:80,textAlign:"center"}}>
             ● Lade Flottendaten…
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  if (fetchError || FLEET.length === 0) {
+    return (
+      <>
+        <FontStyle />
+        <div className="ts-app" style={{justifyContent:"center",alignItems:"center"}}>
+          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:13,marginTop:80,textAlign:"center",lineHeight:1.8}}>
+            <div style={{fontSize:24,marginBottom:16}}>⚠</div>
+            <div style={{color:"#cf222e",marginBottom:8}}>Keine Flottendaten verfügbar</div>
+            <div style={{color:"#9198a1",fontSize:11}}>
+              {fetchError
+                ? `Fehler: ${fetchError}`
+                : "Supabase hat keine Geräte zurückgegeben. Ist der Agent aktiv und die device_summary-View vorhanden?"}
+            </div>
           </div>
         </div>
       </>
